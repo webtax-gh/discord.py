@@ -1,7 +1,6 @@
 import asyncio
 import datetime
 import aiohttp
-import websockets
 import discord
 import inspect
 import logging
@@ -32,8 +31,6 @@ class Loop:
             discord.ConnectionClosed,
             aiohttp.ClientError,
             asyncio.TimeoutError,
-            websockets.InvalidHandshake,
-            websockets.WebSocketProtocolError,
         )
 
         self._before_loop = None
