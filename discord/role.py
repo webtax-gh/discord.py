@@ -123,14 +123,14 @@ class Role(Hashable):
 
         return False
 
-    def __eq__(self, other):
-        if not isinstance(other, Role) or not isinstance(self, Role):
-            return NotImplemented
+    # def __eq__(self, other):
+    #     if not isinstance(other, Role) or not isinstance(self, Role):
+    #         return NotImplemented
 
-        if self.guild != other.guild:
-            raise RuntimeError('cannot compare roles from two different guilds.')
+    #     if self.guild != other.guild:
+    #         raise RuntimeError('cannot compare roles from two different guilds.')
 
-        return other.id == self.id
+    #     return other.id == self.id
 
     def __le__(self, other):
         r = Role.__lt__(other, self)
