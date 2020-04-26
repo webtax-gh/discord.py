@@ -229,11 +229,8 @@ class Role(Hashable):
 
         http = self._state.http
 
-        # Get the cached roles
-        cached_role_ids = [r.id for r in self.guild.roles]
-
         # Fetch the roles from the API, ordered by the order of the cache
-        all_guild_roles = sorted(await self.guild.fetch_roles(), key=lambda r: cached_role_ids.index(r.id))
+        all_guild_roles = sorted(await self.guild.fetch_roles())
 
         # Get the order of the roles we want to append
         roles = []
