@@ -31,6 +31,7 @@ from collections import namedtuple
 
 from .iterators import HistoryIterator
 from .context_managers import Typing
+from .enums import ChannelType
 from .errors import InvalidArgument, ClientException, HTTPException
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
@@ -279,6 +280,15 @@ class GuildChannel:
 
                 perms.append(payload)
             options['permission_overwrites'] = perms
+
+        try:
+            ch_type = options['type']
+        except KeyError:
+            pass
+        else:
+            if not isinstance(ch_type, ChannelType):
+                raise InvalidArgument('type field must be of type ChannelType')
+            options['type'] = ch_type.value
 
         if options:
             data = await self._state.http.edit_channel(self.id, reason=reason, **options)
@@ -689,7 +699,7 @@ class GuildChannel:
         Parameters
         ------------
         max_age: :class:`int`
-            How long the invite should last. If it's 0 then the invite
+            How long the invite should last in seconds. If it's 0 then the invite
             doesn't expire. Defaults to 0.
         max_uses: :class:`int`
             How many uses the invite could be used for. If it's 0 then there

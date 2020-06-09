@@ -166,7 +166,7 @@ class Attachment:
         data = await self._http.get_from_cdn(url)
         return data
 
-    async def to_file(self, use_cached=False):
+    async def to_file(self, *, use_cached=False, spoiler=False):
         """|coro|
 
         Converts the attachment into a :class:`File` suitable for sending via
@@ -184,6 +184,12 @@ class Attachment:
             deleted attachments if too much time has passed and it does not work
             on some types of attachments.
 
+            .. versionadded:: 1.4
+        spoiler: :class:`bool`
+            Whether the file is a spoiler.
+            
+            .. versionadded:: 1.4
+
         Raises
         ------
         HTTPException
@@ -200,7 +206,7 @@ class Attachment:
         """
 
         data = await self.read(use_cached=use_cached)
-        return File(io.BytesIO(data), filename=self.filename)
+        return File(io.BytesIO(data), filename=self.filename, spoiler=spoiler)
 
 def flatten_handlers(cls):
     prefix = len('_handle_')
@@ -618,7 +624,7 @@ class Message:
     def jump_url(self):
         """:class:`str`: Returns a URL that allows the client to jump to this message."""
         guild_id = getattr(self.guild, 'id', '@me')
-        return 'https://discordapp.com/channels/{0}/{1.channel.id}/{1.id}'.format(guild_id, self)
+        return 'https://discord.com/channels/{0}/{1.channel.id}/{1.id}'.format(guild_id, self)
 
     def is_system(self):
         """:class:`bool`: Whether the message is a system message.
@@ -798,6 +804,10 @@ class Message:
             If provided, the number of seconds to wait in the background
             before deleting the message we just edited. If the deletion fails,
             then it is silently ignored.
+        allowed_mentions: Optional[:class:`~discord.AllowedMentions`]
+            Controls the mentions being processed in this message.
+
+            .. versionadded:: 1.4
 
         Raises
         -------
@@ -834,6 +844,18 @@ class Message:
              fields['flags'] = flags.value
 
         delete_after = fields.pop('delete_after', None)
+
+        try:
+            allowed_mentions = fields.pop('allowed_mentions')
+        except KeyError:
+            pass
+        else:
+            if allowed_mentions is not None:
+                if self._state.allowed_mentions is not None:
+                    allowed_mentions = self._state.allowed_mentions.merge(allowed_mentions).to_dict()
+                else:
+                    allowed_mentions = allowed_mentions.to_dict()
+                fields['allowed_mentions'] = allowed_mentions
 
         if fields:
             data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
