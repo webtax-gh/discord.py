@@ -29,7 +29,7 @@ from .enums import UserFlags
 __all__ = (
     'SystemChannelFlags',
     'MessageFlags',
-    'PublicUserFlags'
+    'PublicUserFlags',
     'Intents',
 )
 
