@@ -65,7 +65,7 @@ log = logging.getLogger(__name__)
 ReadyState = namedtuple('ReadyState', ('launch', 'guilds'))
 
 class ConnectionState:
-    def __init__(self, *, dispatch, handlers, syncer, http, loop, **options):
+    def __init__(self, *, dispatch, handlers, hooks, syncer, http, loop, **options):
         self.loop = loop
         self.http = http
         self.max_messages = options.get('max_messages', 1000)
@@ -76,10 +76,15 @@ class ConnectionState:
         self.syncer = syncer
         self.is_bot = None
         self.handlers = handlers
+        self.hooks = hooks
         self.shard_count = None
         self._ready_task = None
         self._fetch_offline = options.get('fetch_offline_members', True)
         self.heartbeat_timeout = options.get('heartbeat_timeout', 60.0)
+        self.guild_ready_timeout = options.get('guild_ready_timeout', 2.0)
+        if self.guild_ready_timeout < 0:
+            raise ValueError('guild_ready_timeout cannot be negative')
+
         self.guild_subscriptions = options.get('guild_subscriptions', True)
         allowed_mentions = options.get('allowed_mentions')
 
@@ -177,6 +182,14 @@ class ConnectionState:
             pass
         else:
             func(*args, **kwargs)
+
+    async def call_hooks(self, key, *args, **kwargs):
+        try:
+            coro = self.hooks[key]
+        except KeyError:
+            pass
+        else:
+            await coro(*args, **kwargs)
 
     @property
     def self_id(self):
@@ -368,10 +381,10 @@ class ConnectionState:
             # only real bots wait for GUILD_CREATE streaming
             if self.is_bot:
                 while True:
-                    # this snippet of code is basically waiting 2 seconds
+                    # this snippet of code is basically waiting N seconds
                     # until the last GUILD_CREATE was sent
                     try:
-                        await asyncio.wait_for(launch.wait(), timeout=2.0)
+                        await asyncio.wait_for(launch.wait(), timeout=self.guild_ready_timeout)
                     except asyncio.TimeoutError:
                         break
                     else:
@@ -1055,6 +1068,7 @@ class AutoShardedConnectionState(ConnectionState):
         super().__init__(*args, **kwargs)
         self._ready_task = None
         self.shard_ids = ()
+        self.shards_launched = asyncio.Event()
 
     async def chunker(self, guild_id, query='', limit=0, *, shard_id=None, nonce=None):
         ws = self._get_websocket(guild_id, shard_id=shard_id)
@@ -1081,12 +1095,13 @@ class AutoShardedConnectionState(ConnectionState):
                 log.info('Finished requesting guild member chunks for %d guilds.', len(guilds))
 
     async def _delay_ready(self):
+        await self.shards_launched.wait()
         launch = self._ready_state.launch
         while True:
-            # this snippet of code is basically waiting 2 * shard_ids seconds
+            # this snippet of code is basically waiting N seconds
             # until the last GUILD_CREATE was sent
             try:
-                await asyncio.wait_for(launch.wait(), timeout=2.0 * len(self.shard_ids))
+                await asyncio.wait_for(launch.wait(), timeout=self.guild_ready_timeout)
             except asyncio.TimeoutError:
                 break
             else:
@@ -1139,5 +1154,10 @@ class AutoShardedConnectionState(ConnectionState):
             self._add_private_channel(factory(me=user, data=pm, state=self))
 
         self.dispatch('connect')
+        self.dispatch('shard_connect', data['__shard_id__'])
         if self._ready_task is None:
             self._ready_task = asyncio.ensure_future(self._delay_ready(), loop=self.loop)
+
+    def parse_resumed(self, data):
+        self.dispatch('resumed')
+        self.dispatch('shard_resumed', data['__shard_id__'])
