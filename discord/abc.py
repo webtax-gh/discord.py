@@ -27,7 +27,6 @@ DEALINGS IN THE SOFTWARE.
 import abc
 import copy
 import asyncio
-from collections import namedtuple
 
 from .iterators import HistoryIterator
 from .context_managers import Typing
@@ -53,7 +52,7 @@ class Snowflake(metaclass=abc.ABCMeta):
     abstract base class.
 
     If you want to create a snowflake on your own, consider using
-    :class:`Object`.
+    :class:`.Object`.
 
     Attributes
     -----------
@@ -163,7 +162,22 @@ class PrivateChannel(metaclass=abc.ABCMeta):
             return NotImplemented
         return NotImplemented
 
-_Overwrites = namedtuple('_Overwrites', 'id allow deny type')
+class _Overwrites:
+    __slots__ = ('id', 'allow', 'deny', 'type')
+
+    def __init__(self, **kwargs):
+        self.id = kwargs.pop('id')
+        self.allow = kwargs.pop('allow', 0)
+        self.deny = kwargs.pop('deny', 0)
+        self.type = kwargs.pop('type')
+
+    def _asdict(self):
+        return {
+            'id': self.id,
+            'allow': self.allow,
+            'deny': self.deny,
+            'type': self.type,
+        }
 
 class GuildChannel:
     """An ABC that details the common operations on a Discord guild channel.
@@ -597,7 +611,7 @@ class GuildChannel:
         target: Union[:class:`~discord.Member`, :class:`~discord.Role`]
             The member or role to overwrite permissions for.
         overwrite: Optional[:class:`~discord.PermissionOverwrite`]
-            The permissions to allow and deny to the target, or `None` to
+            The permissions to allow and deny to the target, or ``None`` to
             delete the overwrite.
         \*\*permissions
             A keyword argument list of permissions to set for ease of use.
@@ -700,10 +714,10 @@ class GuildChannel:
         ------------
         max_age: :class:`int`
             How long the invite should last in seconds. If it's 0 then the invite
-            doesn't expire. Defaults to 0.
+            doesn't expire. Defaults to ``0``.
         max_uses: :class:`int`
             How many uses the invite could be used for. If it's 0 then there
-            are unlimited uses. Defaults to 0.
+            are unlimited uses. Defaults to ``0``.
         temporary: :class:`bool`
             Denotes that the invite grants temporary membership
             (i.e. they get kicked after they disconnect). Defaults to ``False``.

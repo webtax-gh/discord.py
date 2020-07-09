@@ -36,6 +36,7 @@ import aiohttp
 from .user import User, Profile
 from .asset import Asset
 from .invite import Invite
+from .template import Template
 from .widget import Widget
 from .guild import Guild
 from .channel import _channel_factory
@@ -122,10 +123,10 @@ class Client:
     -----------
     max_messages: Optional[:class:`int`]
         The maximum number of messages to store in the internal message cache.
-        This defaults to 1000. Passing in ``None`` disables the message cache.
+        This defaults to ``1000``. Passing in ``None`` disables the message cache.
 
         .. versionchanged:: 1.3
-            Allow disabling the message cache and change the default size to 1000.
+            Allow disabling the message cache and change the default size to ``1000``.
     loop: Optional[:class:`asyncio.AbstractEventLoop`]
         The :class:`asyncio.AbstractEventLoop` to use for asynchronous operations.
         Defaults to ``None``, in which case the default event loop is used via
@@ -137,7 +138,7 @@ class Client:
     proxy_auth: Optional[:class:`aiohttp.BasicAuth`]
         An object that represents proxy HTTP Basic Authorization.
     shard_id: Optional[:class:`int`]
-        Integer starting at 0 and less than :attr:`.shard_count`.
+        Integer starting at ``0`` and less than :attr:`.shard_count`.
     shard_count: Optional[:class:`int`]
         The total number of shards.
     intents: :class:`Intents`
@@ -269,7 +270,7 @@ class Client:
 
     @property
     def user(self):
-        """Optional[:class:`.ClientUser`]: Represents the connected client. None if not logged in."""
+        """Optional[:class:`.ClientUser`]: Represents the connected client. ``None`` if not logged in."""
         return self._connection.user
 
     @property
@@ -707,7 +708,7 @@ class Client:
 
     @property
     def allowed_mentions(self):
-        """Optional[:class:`AllowedMentions`]: The allowed mention configuration.
+        """Optional[:class:`~discord.AllowedMentions`]: The allowed mention configuration.
 
         .. versionadded:: 1.4
         """
@@ -1052,7 +1053,7 @@ class Client:
             The number of guilds to retrieve.
             If ``None``, it retrieves every guild you have access to. Note, however,
             that this would make it a slow operation.
-            Defaults to 100.
+            Defaults to ``100``.
         before: Union[:class:`.abc.Snowflake`, :class:`datetime.datetime`]
             Retrieves guilds before this date or object.
             If a date is provided it must be a timezone-naive datetime representing UTC time.
@@ -1071,6 +1072,32 @@ class Client:
             The guild with the guild data parsed.
         """
         return GuildIterator(self, limit=limit, before=before, after=after)
+
+    async def fetch_template(self, code):
+        """|coro|
+
+        Gets a :class:`.Template` from a discord.new URL or code.
+
+        Parameters
+        -----------
+        code: Union[:class:`.Template`, :class:`str`]
+            The Discord Template Code or URL (must be a discord.new URL).
+
+        Raises
+        -------
+        :exc:`.NotFound`
+            The template is invalid.
+        :exc:`.HTTPException`
+            Getting the template failed.
+
+        Returns
+        --------
+        :class:`.Template`
+            The template from the URL/code.
+        """
+        code = utils.resolve_template(code)
+        data = await self.http.get_template(code)
+        return Template(data=data, state=self._connection)
 
     async def fetch_guild(self, guild_id):
         """|coro|
@@ -1106,7 +1133,7 @@ class Client:
         data = await self.http.get_guild(guild_id)
         return Guild(data=data, state=self._connection)
 
-    async def create_guild(self, name, region=None, icon=None):
+    async def create_guild(self, name, region=None, icon=None, *, code=None):
         """|coro|
 
         Creates a :class:`.Guild`.
@@ -1123,6 +1150,10 @@ class Client:
         icon: :class:`bytes`
             The :term:`py:bytes-like object` representing the icon. See :meth:`.ClientUser.edit`
             for more details on what is expected.
+        code: Optional[:class:`str`]
+            The code for a template to create the guild with.
+
+            .. versionadded:: 1.4
 
         Raises
         ------
@@ -1145,7 +1176,10 @@ class Client:
         else:
             region = region.value
 
-        data = await self.http.create_guild(name, region, icon)
+        if code:
+            data = await self.http.create_from_template(code, name, region, icon)
+        else:
+            data = await self.http.create_guild(name, region, icon)
         return Guild(data=data, state=self._connection)
 
     # Invite management
@@ -1163,7 +1197,7 @@ class Client:
 
         Parameters
         -----------
-        url: :class:`str`
+        url: Union[:class:`.Invite`, :class:`str`]
             The Discord invite ID or URL (must be a discord.gg URL).
         with_counts: :class:`bool`
             Whether to include count information in the invite. This fills the

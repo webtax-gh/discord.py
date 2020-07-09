@@ -469,13 +469,13 @@ class HTTPClient:
         return self.request(Route('POST', '/channels/{channel_id}/messages/{message_id}/crosspost',
                                   channel_id=channel_id, message_id=message_id))
 
-    def pin_message(self, channel_id, message_id):
+    def pin_message(self, channel_id, message_id, reason=None):
         return self.request(Route('PUT', '/channels/{channel_id}/pins/{message_id}',
-                                  channel_id=channel_id, message_id=message_id))
+                                  channel_id=channel_id, message_id=message_id), reason=reason)
 
-    def unpin_message(self, channel_id, message_id):
+    def unpin_message(self, channel_id, message_id, reason=None):
         return self.request(Route('DELETE', '/channels/{channel_id}/pins/{message_id}',
-                                  channel_id=channel_id, message_id=message_id))
+                                  channel_id=channel_id, message_id=message_id), reason=reason)
 
     def pins_from(self, channel_id):
         return self.request(Route('GET', '/channels/{channel_id}/pins', channel_id=channel_id))
@@ -604,11 +604,11 @@ class HTTPClient:
     def get_webhook(self, webhook_id):
         return self.request(Route('GET', '/webhooks/{webhook_id}', webhook_id=webhook_id))
 
-    def follow_webhook(self, channel_id, webhook_channel_id):
+    def follow_webhook(self, channel_id, webhook_channel_id, reason=None):
         payload = {
             'webhook_channel_id': str(webhook_channel_id)
         }
-        return self.request(Route('POST', '/channels/{channel_id}/followers', channel_id=channel_id), json=payload)
+        return self.request(Route('POST', '/channels/{channel_id}/followers', channel_id=channel_id), json=payload, reason=reason)
 
     # Guild management
 
@@ -656,6 +656,17 @@ class HTTPClient:
 
         return self.request(Route('PATCH', '/guilds/{guild_id}', guild_id=guild_id), json=payload, reason=reason)
 
+    def get_template(self, code):
+        return self.request(Route('GET', '/guilds/templates/{code}', code=code))
+    
+    def create_from_template(self, code, name, region, icon):
+        payload = {
+            'name': name,
+            'icon': icon,
+            'region': region
+        }
+        return self.request(Route('POST', '/guilds/templates/{code}', code=code), json=payload)
+
     def get_bans(self, guild_id):
         return self.request(Route('GET', '/guilds/{guild_id}/bans', guild_id=guild_id))
 
@@ -686,12 +697,14 @@ class HTTPClient:
         return self.request(Route('GET', '/guilds/{guild_id}/members/{member_id}', guild_id=guild_id, member_id=member_id))
 
     def prune_members(self, guild_id, days, compute_prune_count, roles, *, reason=None):
-        params = {
+        payload = {
             'days': days,
-            'compute_prune_count': 'true' if compute_prune_count else 'false',
-            'include_roles': roles
+            'compute_prune_count': 'true' if compute_prune_count else 'false'
         }
-        return self.request(Route('POST', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params, reason=reason)
+        if roles:
+            payload['include_roles'] = ', '.join(roles)
+
+        return self.request(Route('POST', '/guilds/{guild_id}/prune', guild_id=guild_id), json=payload, reason=reason)
 
     def estimate_pruned_members(self, guild_id, days):
         params = {
@@ -726,6 +739,38 @@ class HTTPClient:
         }
         r = Route('PATCH', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id)
         return self.request(r, json=payload, reason=reason)
+
+    def get_all_integrations(self, guild_id):
+        r = Route('GET', '/guilds/{guild_id}/integrations', guild_id=guild_id)
+
+        return self.request(r)
+
+    def create_integration(self, guild_id, type, id):
+        payload = {
+            'type': type,
+            'id': id
+        }
+
+        r = Route('POST', '/guilds/{guild_id}/integrations', guild_id=guild_id)
+        return self.request(r, json=payload)
+
+    def edit_integration(self, guild_id, integration_id, **payload):
+        r = Route('PATCH', '/guilds/{guild_id}/integrations/{integration_id}', guild_id=guild_id,
+                  integration_id=integration_id)
+
+        return self.request(r, json=payload)
+
+    def sync_integration(self, guild_id, integration_id):
+        r = Route('POST', '/guilds/{guild_id}/integrations/{integration_id}/sync', guild_id=guild_id,
+                  integration_id=integration_id)
+
+        return self.request(r)
+
+    def delete_integration(self, guild_id, integration_id):
+        r = Route('DELETE', '/guilds/{guild_id}/integrations/{integration_id}', guild_id=guild_id,
+                  integration_id=integration_id)
+
+        return self.request(r)
 
     def get_audit_logs(self, guild_id, limit=100, before=None, after=None, user_id=None, action_type=None):
         params = {'limit': limit}

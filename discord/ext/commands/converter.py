@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 import re
 import inspect
+import typing
 
 import discord
 
@@ -86,6 +87,13 @@ class Converter:
             The invocation context that the argument is being used in.
         argument: :class:`str`
             The argument that is being converted.
+
+        Raises
+        -------
+        :exc:`.CommandError`
+            A generic exception occurred when converting the argument.
+        :exc:`.BadArgument`
+            The converter failed to convert the argument.
         """
         raise NotImplementedError('Derived classes need to implement this.')
 
@@ -179,6 +187,7 @@ class UserConverter(IDConverter):
             raise BadArgument('User "{}" not found'.format(argument))
 
         return result
+
 class MessageConverter(Converter):
     """Converts to a :class:`discord.Message`.
 
@@ -554,6 +563,9 @@ class _Greedy:
 
         if converter is str or converter is type(None) or converter is _Greedy:
             raise TypeError('Greedy[%s] is invalid.' % converter.__name__)
+
+        if getattr(converter, '__origin__', None) is typing.Union and type(None) in converter.__args__:
+            raise TypeError('Greedy[%r] is invalid.' % converter)
 
         return self.__class__(converter=converter)
 

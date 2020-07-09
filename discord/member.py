@@ -60,7 +60,7 @@ class VoiceState:
     afk: :class:`bool`
         Indicates if the user is currently in the AFK channel in the guild.
     channel: Optional[:class:`VoiceChannel`]
-        The voice channel that the user is currently connected to. None if the user
+        The voice channel that the user is currently connected to. ``None`` if the user
         is not currently in a voice channel.
     """
 
@@ -373,7 +373,7 @@ class Member(discord.abc.Messageable, _BaseUser):
     @property
     def activity(self):
         """Union[:class:`BaseActivity`, :class:`Spotify`]: Returns the primary
-        activity the user is currently doing. Could be None if no activity is being done.
+        activity the user is currently doing. Could be ``None`` if no activity is being done.
 
         .. note::
 
@@ -413,8 +413,13 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         Parameters
         -----------
-        channel: :class:`Channel`
+        channel: :class:`abc.GuildChannel`
             The channel to check your permissions for.
+
+        Returns
+        -------
+        :class:`Permissions`
+            The resolved permissions for the member.
         """
         return channel.permissions_for(self)
 
@@ -433,7 +438,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     @property
     def guild_permissions(self):
-        """Returns the member's guild permissions.
+        """:class:`Permissions`: Returns the member's guild permissions.
 
         This only takes into consideration the guild permissions
         and not most of the implied permissions or any of the
