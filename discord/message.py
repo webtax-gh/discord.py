@@ -524,6 +524,14 @@ class Message:
         call['participants'] = participants
         self.call = CallMessage(message=self, **call)
 
+    def _rebind_channel_reference(self, new_channel):
+        self.channel = new_channel
+
+        try:
+            del self._cs_guild
+        except AttributeError:
+            pass
+
     @utils.cached_slot_property('_cs_guild')
     def guild(self):
         """Optional[:class:`Guild`]: The guild that the message belongs to, if applicable."""
@@ -896,7 +904,7 @@ class Message:
         Parameters
         -----------
         reason: Optional[:class:`str`]
-            The reason for pinning the message. Shows up on the audit log.
+            The reason for unpinning the message. Shows up on the audit log.
 
             .. versionadded:: 1.4
 

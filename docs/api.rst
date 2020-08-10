@@ -233,7 +233,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     .. note::
 
-        This is only for the messages received from the client
+        This is only for the messages sent from the client
         WebSocket. The voice WebSocket will not trigger this event.
 
     :param payload: The message that is about to be passed on to the
@@ -2756,7 +2756,7 @@ Data Classes
 Some classes are just there to be data containers, this lists them.
 
 Unlike :ref:`models <discord_api_models>` you are allowed to create
-these yourself, even if they can also be used to hold attributes.
+most of these yourself, even if they can also be used to hold attributes.
 
 Nearly all classes here have :ref:`py:slots` defined which means that it is
 impossible to have dynamic attributes to the data classes.
@@ -2837,22 +2837,28 @@ PermissionOverwrite
 .. autoclass:: PermissionOverwrite
     :members:
 
+ShardInfo
+~~~~~~~~~~~
+
+.. autoclass:: ShardInfo()
+    :members:
+
 SystemChannelFlags
 ~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: SystemChannelFlags
+.. autoclass:: SystemChannelFlags()
     :members:
 
 MessageFlags
 ~~~~~~~~~~~~
 
-.. autoclass:: MessageFlags
+.. autoclass:: MessageFlags()
     :members:
 
 PublicUserFlags
 ~~~~~~~~~~~~~~~
 
-.. autoclass:: PublicUserFlags
+.. autoclass:: PublicUserFlags()
     :members:
 
 

@@ -15,7 +15,9 @@ __title__ = 'discord'
 __author__ = 'Rapptz'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015-2020 Rapptz'
-__version__ = '1.4.0a'
+__version__ = '1.4.1'
+
+__path__ = __import__('pkgutil').extend_path(__path__, __name__)
 
 from collections import namedtuple
 import logging
@@ -49,7 +51,7 @@ from . import utils, opus, abc
 from .enums import *
 from .embeds import Embed
 from .mentions import AllowedMentions
-from .shard import AutoShardedClient
+from .shard import AutoShardedClient, ShardInfo
 from .player import *
 from .webhook import *
 from .voice_client import VoiceClient
@@ -59,7 +61,7 @@ from .team import *
 
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 
-version_info = VersionInfo(major=1, minor=4, micro=0, releaselevel='alpha', serial=0)
+version_info = VersionInfo(major=1, minor=4, micro=1, releaselevel='final', serial=0)
 
 try:
     from logging import NullHandler

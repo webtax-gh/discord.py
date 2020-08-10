@@ -34,6 +34,7 @@ import weakref
 import aiohttp
 
 from .errors import HTTPException, Forbidden, NotFound, LoginFailure, GatewayNotFound
+from .gateway import DiscordClientWebSocketResponse
 from . import __version__, utils
 
 log = logging.getLogger(__name__)
@@ -113,7 +114,22 @@ class HTTPClient:
 
     def recreate(self):
         if self.__session.closed:
-            self.__session = aiohttp.ClientSession(connector=self.connector)
+            self.__session = aiohttp.ClientSession(connector=self.connector, ws_response_class=DiscordClientWebSocketResponse)
+
+    async def ws_connect(self, url, *, compress=0):
+        kwargs = {
+            'proxy_auth': self.proxy_auth,
+            'proxy': self.proxy,
+            'max_msg_size': 0,
+            'timeout': 30.0,
+            'autoclose': False,
+            'headers': {
+                'User-Agent': self.user_agent,
+            },
+            'compress': compress
+        }
+
+        return await self.__session.ws_connect(url, **kwargs)
 
     async def ws_connect(self, url, *, compress=0):
         kwargs = {
@@ -279,7 +295,7 @@ class HTTPClient:
 
     async def static_login(self, token, *, bot):
         # Necessary to get aiohttp to stop complaining about session creation
-        self.__session = aiohttp.ClientSession(connector=self.connector)
+        self.__session = aiohttp.ClientSession(connector=self.connector, ws_response_class=DiscordClientWebSocketResponse)
         old_token, old_bot = self.token, self.bot_token
         self._token(token, bot=bot)
 
