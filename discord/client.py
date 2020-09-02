@@ -661,7 +661,8 @@ class Client:
             try:
                 await self.start(*args, **kwargs)
             finally:
-                await self.close()
+                if not self.is_closed():
+                    await self.close()
 
         def stop_loop_on_completion(f):
             loop.stop()
@@ -1193,7 +1194,7 @@ class Client:
 
             If the invite is for a guild you have not joined, the guild and channel
             attributes of the returned :class:`.Invite` will be :class:`.PartialInviteGuild` and
-            :class:`PartialInviteChannel` respectively.
+            :class:`.PartialInviteChannel` respectively.
 
         Parameters
         -----------
