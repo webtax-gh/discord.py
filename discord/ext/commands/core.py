@@ -1770,7 +1770,7 @@ def bot_has_permissions(**perms):
 
         missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
 
-        if not missing or permissions.administrator:
+        if not missing:
             return True
 
         raise BotMissingPermissions(missing)
