@@ -41,7 +41,9 @@ __all__ = (
     'CustomActivity',
 )
 
-"""If curious, this is the current schema for an activity.
+
+"""
+If curious, this is the current schema for an activity.
 
 It's fairly long so I will document it here:
 
@@ -86,8 +88,10 @@ t.ActivityFlags = {
 }
 """
 
+
 class BaseActivity:
-    """The base activity that all user-settable activities inherit from.
+    """
+    The base activity that all user-settable activities inherit from.
     A user-settable activity is one that can be used in :meth:`Client.change_presence`.
 
     The following types currently count as user-settable:
@@ -104,6 +108,7 @@ class BaseActivity:
 
     .. versionadded:: 1.3
     """
+
     __slots__ = ('_created_at',)
 
     def __init__(self, **kwargs):
@@ -111,15 +116,19 @@ class BaseActivity:
 
     @property
     def created_at(self):
-        """Optional[:class:`datetime.datetime`]: When the user started doing this activity in UTC.
+        """
+        Optional[:class:`datetime.datetime`]: When the user started doing this activity in UTC.
 
         .. versionadded:: 1.3
         """
+
         if self._created_at is not None:
             return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
 
+
 class Activity(BaseActivity):
-    """Represents an activity in Discord.
+    """
+    Represents an activity in Discord.
 
     This could be an activity such as streaming, playing, listening
     or watching.
@@ -170,9 +179,11 @@ class Activity(BaseActivity):
         The emoji that belongs to this activity.
     """
 
-    __slots__ = ('state', 'details', '_created_at', 'timestamps', 'assets', 'party',
-                 'flags', 'sync_id', 'session_id', 'type', 'name', 'url',
-                 'application_id', 'emoji')
+    __slots__ = (
+        'state', 'details', '_created_at', 'timestamps', 'assets', 'party',
+        'flags', 'sync_id', 'session_id', 'type', 'name', 'url',
+        'application_id', 'emoji',
+    )
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -225,7 +236,10 @@ class Activity(BaseActivity):
 
     @property
     def start(self):
-        """Optional[:class:`datetime.datetime`]: When the user started doing this activity in UTC, if applicable."""
+        """
+        Optional[:class:`datetime.datetime`]: When the user started doing this activity in UTC, if applicable.
+        """
+
         try:
             return datetime.datetime.utcfromtimestamp(self.timestamps['start'] / 1000)
         except KeyError:
@@ -233,7 +247,10 @@ class Activity(BaseActivity):
 
     @property
     def end(self):
-        """Optional[:class:`datetime.datetime`]: When the user will stop doing this activity in UTC, if applicable."""
+        """
+        Optional[:class:`datetime.datetime`]: When the user will stop doing this activity in UTC, if applicable.
+        """
+
         try:
             return datetime.datetime.utcfromtimestamp(self.timestamps['end'] / 1000)
         except KeyError:
@@ -241,7 +258,10 @@ class Activity(BaseActivity):
 
     @property
     def large_image_url(self):
-        """Optional[:class:`str`]: Returns a URL pointing to the large image asset of this activity if applicable."""
+        """
+        Optional[:class:`str`]: Returns a URL pointing to the large image asset of this activity if applicable.
+        """
+
         if self.application_id is None:
             return None
 
@@ -254,7 +274,10 @@ class Activity(BaseActivity):
 
     @property
     def small_image_url(self):
-        """Optional[:class:`str`]: Returns a URL pointing to the small image asset of this activity if applicable."""
+        """
+        Optional[:class:`str`]: Returns a URL pointing to the small image asset of this activity if applicable.
+        """
+
         if self.application_id is None:
             return None
 
@@ -264,19 +287,27 @@ class Activity(BaseActivity):
             return None
         else:
             return Asset.BASE + '/app-assets/{0}/{1}.png'.format(self.application_id, small_image)
+
     @property
     def large_image_text(self):
-        """Optional[:class:`str`]: Returns the large image asset hover text of this activity if applicable."""
+        """
+        Optional[:class:`str`]: Returns the large image asset hover text of this activity if applicable.
+        """
+
         return self.assets.get('large_text', None)
 
     @property
     def small_image_text(self):
-        """Optional[:class:`str`]: Returns the small image asset hover text of this activity if applicable."""
+        """
+        Optional[:class:`str`]: Returns the small image asset hover text of this activity if applicable.
+        """
+
         return self.assets.get('small_text', None)
 
 
 class Game(BaseActivity):
-    """A slimmed down version of :class:`Activity` that represents a Discord game.
+    """
+    A slimmed down version of :class:`Activity` that represents a Discord game.
 
     This is typically displayed via **Playing** on the official Discord client.
 
@@ -342,18 +373,25 @@ class Game(BaseActivity):
 
         It always returns :attr:`ActivityType.playing`.
         """
+
         return ActivityType.playing
 
     @property
     def start(self):
-        """Optional[:class:`datetime.datetime`]: When the user started playing this game in UTC, if applicable."""
+        """
+        Optional[:class:`datetime.datetime`]: When the user started playing this game in UTC, if applicable.
+        """
+
         if self._start:
             return datetime.datetime.utcfromtimestamp(self._start / 1000)
         return None
 
     @property
     def end(self):
-        """Optional[:class:`datetime.datetime`]: When the user will stop playing this game in UTC, if applicable."""
+        """
+        Optional[:class:`datetime.datetime`]: When the user will stop playing this game in UTC, if applicable.
+        """
+
         if self._end:
             return datetime.datetime.utcfromtimestamp(self._end / 1000)
         return None
@@ -387,8 +425,10 @@ class Game(BaseActivity):
     def __hash__(self):
         return hash(self.name)
 
+
 class Streaming(BaseActivity):
-    """A slimmed down version of :class:`Activity` that represents a Discord streaming status.
+    """
+    A slimmed down version of :class:`Activity` that represents a Discord streaming status.
 
     This is typically displayed via **Streaming** on the official Discord client.
 
@@ -440,15 +480,17 @@ class Streaming(BaseActivity):
         self.name = extra.pop('details', name)
         self.game = extra.pop('state', None)
         self.url = url
-        self.details = extra.pop('details', self.name) # compatibility
+        self.details = extra.pop('details', self.name)  # compatibility
         self.assets = extra.pop('assets', {})
 
     @property
     def type(self):
-        """:class:`ActivityType`: Returns the game's type. This is for compatibility with :class:`Activity`.
+        """
+        :class:`ActivityType`: Returns the game's type. This is for compatibility with :class:`Activity`.
 
         It always returns :attr:`ActivityType.streaming`.
         """
+
         return ActivityType.streaming
 
     def __str__(self):
@@ -459,7 +501,8 @@ class Streaming(BaseActivity):
 
     @property
     def twitch_name(self):
-        """Optional[:class:`str`]: If provided, the twitch name of the user streaming.
+        """
+        Optional[:class:`str`]: If provided, the twitch name of the user streaming.
 
         This corresponds to the ``large_image`` key of the :attr:`Streaming.assets`
         dictionary if it starts with ``twitch:``. Typically set by the Discord client.
@@ -492,8 +535,10 @@ class Streaming(BaseActivity):
     def __hash__(self):
         return hash(self.name)
 
+
 class Spotify:
-    """Represents a Spotify listening activity from Discord. This is a special case of
+    """
+    Represents a Spotify listening activity from Discord. This is a special case of
     :class:`Activity` that makes it easier to work with the Spotify integration.
 
     .. container:: operations
@@ -515,8 +560,10 @@ class Spotify:
             Returns the string 'Spotify'.
     """
 
-    __slots__ = ('_state', '_details', '_timestamps', '_assets', '_party', '_sync_id', '_session_id',
-                 '_created_at')
+    __slots__ = (
+        '_state', '_details', '_timestamps', '_assets', '_party', '_sync_id',
+        '_session_id', '_created_at',
+    )
 
     def __init__(self, **data):
         self._state = data.pop('state', None)
@@ -530,38 +577,48 @@ class Spotify:
 
     @property
     def type(self):
-        """:class:`ActivityType`: Returns the activity's type. This is for compatibility with :class:`Activity`.
+        """
+        :class:`ActivityType`: Returns the activity's type. This is for compatibility with :class:`Activity`.
 
         It always returns :attr:`ActivityType.listening`.
         """
+
         return ActivityType.listening
 
     @property
     def created_at(self):
-        """Optional[:class:`datetime.datetime`]: When the user started listening in UTC.
+        """
+        Optional[:class:`datetime.datetime`]: When the user started listening in UTC.
 
         .. versionadded:: 1.3
         """
+
         if self._created_at is not None:
             return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
 
     @property
     def colour(self):
-        """:class:`Colour`: Returns the Spotify integration colour, as a :class:`Colour`.
+        """
+        :class:`Colour`: Returns the Spotify integration colour, as a :class:`Colour`.
 
-        There is an alias for this named :attr:`color`"""
+        There is an alias for this named :attr:`color`.
+        """
+
         return Colour(0x1db954)
 
     @property
     def color(self):
-        """:class:`Colour`: Returns the Spotify integration colour, as a :class:`Colour`.
+        """
+        :class:`Colour`: Returns the Spotify integration colour, as a :class:`Colour`.
 
-        There is an alias for this named :attr:`colour`"""
+        There is an alias for this named :attr:`colour`.
+        """
+
         return self.colour
 
     def to_dict(self):
         return {
-            'flags': 48, # SYNC | PLAY
+            'flags': 48,  # SYNC | PLAY
             'name': 'Spotify',
             'assets': self._assets,
             'party': self._party,
@@ -574,12 +631,18 @@ class Spotify:
 
     @property
     def name(self):
-        """:class:`str`: The activity's name. This will always return "Spotify"."""
+        """
+        :class:`str`: The activity's name. This will always return "Spotify".
+        """
+
         return 'Spotify'
 
     def __eq__(self, other):
-        return (isinstance(other, Spotify) and other._session_id == self._session_id
-                and other._sync_id == self._sync_id and other.start == self.start)
+        return all([
+            isinstance(other, Spotify),
+            other._session_id == self._session_id,
+            other._sync_id == self._sync_id, other.start == self.start,
+        ])
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -595,31 +658,45 @@ class Spotify:
 
     @property
     def title(self):
-        """:class:`str`: The title of the song being played."""
+        """
+        :class:`str`: The title of the song being played.
+        """
+
         return self._details
 
     @property
     def artists(self):
-        """List[:class:`str`]: The artists of the song being played."""
+        """
+        List[:class:`str`]: The artists of the song being played.
+        """
+
         return self._state.split('; ')
 
     @property
     def artist(self):
-        """:class:`str`: The artist of the song being played.
+        """
+        :class:`str`: The artist of the song being played.
 
         This does not attempt to split the artist information into
         multiple artists. Useful if there's only a single artist.
         """
+
         return self._state
 
     @property
     def album(self):
-        """:class:`str`: The album that the song being played belongs to."""
+        """
+        :class:`str`: The album that the song being played belongs to.
+        """
+
         return self._assets.get('large_text', '')
 
     @property
     def album_cover_url(self):
-        """:class:`str`: The album cover image URL from Spotify's CDN."""
+        """
+        :class:`str`: The album cover image URL from Spotify's CDN.
+        """
+
         large_image = self._assets.get('large_image', '')
         if large_image[:8] != 'spotify:':
             return ''
@@ -628,31 +705,48 @@ class Spotify:
 
     @property
     def track_id(self):
-        """:class:`str`: The track ID used by Spotify to identify this song."""
+        """
+        :class:`str`: The track ID used by Spotify to identify this song.
+        """
+
         return self._sync_id
 
     @property
     def start(self):
-        """:class:`datetime.datetime`: When the user started playing this song in UTC."""
+        """
+        :class:`datetime.datetime`: When the user started playing this song in UTC.
+        """
+
         return datetime.datetime.utcfromtimestamp(self._timestamps['start'] / 1000)
 
     @property
     def end(self):
-        """:class:`datetime.datetime`: When the user will stop playing this song in UTC."""
+        """
+        :class:`datetime.datetime`: When the user will stop playing this song in UTC.
+        """
+
         return datetime.datetime.utcfromtimestamp(self._timestamps['end'] / 1000)
 
     @property
     def duration(self):
-        """:class:`datetime.timedelta`: The duration of the song being played."""
+        """
+        :class:`datetime.timedelta`: The duration of the song being played.
+        """
+
         return self.end - self.start
 
     @property
     def party_id(self):
-        """:class:`str`: The party ID of the listening party."""
+        """
+        :class:`str`: The party ID of the listening party.
+        """
+
         return self._party.get('id', '')
 
+
 class CustomActivity(BaseActivity):
-    """Represents a Custom activity from Discord.
+    """
+    Represents a Custom activity from Discord.
 
     .. container:: operations
 
@@ -697,10 +791,12 @@ class CustomActivity(BaseActivity):
 
     @property
     def type(self):
-        """:class:`ActivityType`: Returns the activity's type. This is for compatibility with :class:`Activity`.
+        """
+        :class:`ActivityType`: Returns the activity's type. This is for compatibility with :class:`Activity`.
 
         It always returns :attr:`ActivityType.custom`.
         """
+
         return ActivityType.custom
 
     def to_dict(self):

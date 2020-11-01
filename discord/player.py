@@ -40,7 +40,9 @@ from .errors import ClientException
 from .opus import Encoder as OpusEncoder
 from .oggparse import OggStream
 
+
 log = logging.getLogger(__name__)
+
 
 __all__ = (
     'AudioSource',
@@ -51,8 +53,10 @@ __all__ = (
     'PCMVolumeTransformer',
 )
 
+
 class AudioSource:
-    """Represents an audio stream.
+    """
+    Represents an audio stream.
 
     The audio stream can be Opus encoded or not, however if the audio stream
     is not Opus encoded then the audio format must be 16-bit 48KHz stereo PCM.
@@ -63,7 +67,8 @@ class AudioSource:
     """
 
     def read(self):
-        """Reads 20ms worth of audio.
+        """
+        Reads 20ms worth of audio.
 
         Subclasses must implement this.
 
@@ -80,31 +85,40 @@ class AudioSource:
         :class:`bytes`
             A bytes like object that represents the PCM or Opus data.
         """
+
         raise NotImplementedError
 
     def is_opus(self):
-        """Checks if the audio source is already encoded in Opus."""
+        """
+        Checks if the audio source is already encoded in Opus.
+        """
+
         return False
 
     def cleanup(self):
-        """Called when clean-up is needed to be done.
+        """
+        Called when clean-up is needed to be done.
 
         Useful for clearing buffer data or processes after
         it is done playing audio.
         """
+
         pass
 
     def __del__(self):
         self.cleanup()
 
+
 class PCMAudio(AudioSource):
-    """Represents raw 16-bit 48KHz stereo PCM audio source.
+    """
+    Represents raw 16-bit 48KHz stereo PCM audio source.
 
     Attributes
     -----------
     stream: :term:`py:file object`
         A file-like object that reads byte data representing raw PCM.
     """
+
     def __init__(self, stream):
         self.stream = stream
 
@@ -114,8 +128,10 @@ class PCMAudio(AudioSource):
             return b''
         return ret
 
+
 class FFmpegAudio(AudioSource):
-    """Represents an FFmpeg (or AVConv) based AudioSource.
+    """
+    Represents an FFmpeg (or AVConv) based AudioSource.
 
     User created AudioSources using FFmpeg differently from how :class:`FFmpegPCMAudio` and
     :class:`FFmpegOpusAudio` work should subclass this.
@@ -166,8 +182,10 @@ class FFmpegAudio(AudioSource):
 
         self._process = self._stdout = None
 
+
 class FFmpegPCMAudio(FFmpegAudio):
-    """An audio source from FFmpeg (or AVConv).
+    """
+    An audio source from FFmpeg (or AVConv).
 
     This launches a sub-process to a specific input file given.
 
@@ -228,8 +246,10 @@ class FFmpegPCMAudio(FFmpegAudio):
     def is_opus(self):
         return False
 
+
 class FFmpegOpusAudio(FFmpegAudio):
-    """An audio source from FFmpeg (or AVConv).
+    """
+    An audio source from FFmpeg (or AVConv).
 
     This launches a sub-process to a specific input file given.  However, rather than
     producing PCM packets like :class:`FFmpegPCMAudio` does that need to be encoded to
@@ -321,7 +341,8 @@ class FFmpegOpusAudio(FFmpegAudio):
 
     @classmethod
     async def from_probe(cls, source, *, method=None, **kwargs):
-        """|coro|
+        """
+        |coro|
 
         A factory method that creates a :class:`FFmpegOpusAudio` after probing
         the input source for audio codec and bitrate information.
@@ -383,7 +404,8 @@ class FFmpegOpusAudio(FFmpegAudio):
 
     @classmethod
     async def probe(cls, source, *, method=None, executable=None):
-        """|coro|
+        """
+        |coro|
 
         Probes the input source for bitrate and codec information.
 
@@ -425,7 +447,7 @@ class FFmpegOpusAudio(FFmpegAudio):
             probefunc = method
             fallback = cls._probe_codec_fallback
         else:
-            raise TypeError("Expected str or callable for parameter 'probe', " \
+            raise TypeError("Expected str or callable for parameter 'probe', "
                             "not '{0.__class__.__name__}'" .format(method))
 
         codec = bitrate = None
@@ -462,13 +484,13 @@ class FFmpegOpusAudio(FFmpegAudio):
 
             codec = streamdata.get('codec_name')
             bitrate = int(streamdata.get('bit_rate', 0))
-            bitrate = max(round(bitrate/1000, 0), 512)
+            bitrate = max(round(bitrate / 1000, 0), 512)
 
         return codec, bitrate
 
     @staticmethod
     def _probe_codec_fallback(source, executable='ffmpeg'):
-        args = [executable, '-hide_banner', '-i',  source]
+        args = [executable, '-hide_banner', '-i', source]
         proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         out, _ = proc.communicate(timeout=20)
         output = out.decode('utf8')
@@ -490,8 +512,10 @@ class FFmpegOpusAudio(FFmpegAudio):
     def is_opus(self):
         return True
 
+
 class PCMVolumeTransformer(AudioSource):
-    """Transforms a previous :class:`AudioSource` to have volume controls.
+    """
+    Transforms a previous :class:`AudioSource` to have volume controls.
 
     This does not work on audio sources that have :meth:`AudioSource.is_opus`
     set to ``True``.
@@ -524,7 +548,10 @@ class PCMVolumeTransformer(AudioSource):
 
     @property
     def volume(self):
-        """Retrieves or sets the volume as a floating point percentage (e.g. ``1.0`` for 100%)."""
+        """
+        Retrieves or sets the volume as a floating point percentage (e.g. ``1.0`` for 100%).
+        """
+
         return self._volume
 
     @volume.setter
@@ -538,6 +565,7 @@ class PCMVolumeTransformer(AudioSource):
         ret = self.original.read()
         return audioop.mul(ret, 2, min(self._volume, 2.0))
 
+
 class AudioPlayer(threading.Thread):
     DELAY = OpusEncoder.FRAME_LENGTH / 1000.0
 
@@ -550,7 +578,7 @@ class AudioPlayer(threading.Thread):
 
         self._end = threading.Event()
         self._resumed = threading.Event()
-        self._resumed.set() # we are not paused
+        self._resumed.set()  # we are not paused
         self._current_error = None
         self._connected = client._connected
         self._lock = threading.Lock()

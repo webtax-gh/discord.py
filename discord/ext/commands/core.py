@@ -38,6 +38,7 @@ from . import converter as converters
 from ._types import _BaseCommand
 from .cog import Cog
 
+
 __all__ = (
     'Command',
     'Group',
@@ -64,6 +65,7 @@ __all__ = (
     'bot_has_guild_permissions'
 )
 
+
 def wrap_callback(coro):
     @functools.wraps(coro)
     async def wrapped(*args, **kwargs):
@@ -77,6 +79,7 @@ def wrap_callback(coro):
             raise CommandInvokeError(exc) from exc
         return ret
     return wrapped
+
 
 def hooked_wrapped_callback(command, ctx, coro):
     @functools.wraps(coro)
@@ -100,6 +103,7 @@ def hooked_wrapped_callback(command, ctx, coro):
         return ret
     return wrapped
 
+
 def _convert_to_bool(argument):
     lowered = argument.lower()
     if lowered in ('yes', 'y', 'true', 't', '1', 'enable', 'on'):
@@ -108,6 +112,7 @@ def _convert_to_bool(argument):
         return False
     else:
         raise BadBoolArgument(lowered)
+
 
 class _CaseInsensitiveDict(dict):
     def __contains__(self, k):
@@ -128,8 +133,10 @@ class _CaseInsensitiveDict(dict):
     def __setitem__(self, k, v):
         super().__setitem__(k.casefold(), v)
 
+
 class Command(_BaseCommand):
-    r"""A class that implements the protocol for a bot text command.
+    r"""
+    A class that implements the protocol for a bot text command.
 
     These are not created manually, instead they are created via the
     decorator or functional interface.
@@ -313,7 +320,8 @@ class Command(_BaseCommand):
                 raise TypeError('Unparameterized Greedy[...] is disallowed in signature.')
 
     def add_check(self, func):
-        """Adds a check to the command.
+        """
+        Adds a check to the command.
 
         This is the non-decorator interface to :func:`.check`.
 
@@ -328,7 +336,8 @@ class Command(_BaseCommand):
         self.checks.append(func)
 
     def remove_check(self, func):
-        """Removes a check from the command.
+        """
+        Removes a check from the command.
 
         This function is idempotent and will not raise an exception
         if the function is not in the command's checks.
@@ -347,16 +356,19 @@ class Command(_BaseCommand):
             pass
 
     def update(self, **kwargs):
-        """Updates :class:`Command` instance with updated attribute.
+        """
+        Updates :class:`Command` instance with updated attribute.
 
         This works similarly to the :func:`.command` decorator in terms
         of parameters in that they are passed to the :class:`Command` or
         subclass constructors, sans the name and callback.
         """
+
         self.__init__(self.callback, **dict(self.__original_kwargs__, **kwargs))
 
     async def __call__(self, *args, **kwargs):
-        """|coro|
+        """
+        |coro|
 
         Calls the internal callback that the command holds.
 
@@ -368,6 +380,7 @@ class Command(_BaseCommand):
 
         .. versionadded:: 1.3
         """
+
         if self.cog is not None:
             return await self.callback(self.cog, *args, **kwargs)
         else:
@@ -390,13 +403,15 @@ class Command(_BaseCommand):
         return other
 
     def copy(self):
-        """Creates a copy of this command.
+        """
+        Creates a copy of this command.
 
         Returns
         --------
         :class:`Command`
             A new instance of this command.
         """
+
         ret = self.__class__(self.callback, **self.__original_kwargs__)
         return self._ensure_assignment_on_copy(ret)
 
@@ -535,7 +550,7 @@ class Command(_BaseCommand):
 
         if view.eof:
             if param.kind == param.VAR_POSITIONAL:
-                raise RuntimeError() # break the loop
+                raise RuntimeError()  # break the loop
             if required:
                 if self._is_typing_optional(param.annotation):
                     return None
@@ -580,17 +595,19 @@ class Command(_BaseCommand):
             value = await self.do_conversion(ctx, converter, argument, param)
         except (CommandError, ArgumentParsingError):
             view.index = previous
-            raise RuntimeError() from None # break loop
+            raise RuntimeError() from None  # break loop
         else:
             return value
 
     @property
     def clean_params(self):
-        """OrderedDict[:class:`str`, :class:`inspect.Parameter`]:
+        """
+        OrderedDict[:class:`str`, :class:`inspect.Parameter`]:
         Retrieves the parameter OrderedDict without the context or self parameters.
 
         Useful for inspecting signature.
         """
+
         result = self.params.copy()
         if self.cog is not None:
             # first parameter is self
@@ -606,11 +623,13 @@ class Command(_BaseCommand):
 
     @property
     def full_parent_name(self):
-        """:class:`str`: Retrieves the fully qualified parent command name.
+        """
+        :class:`str`: Retrieves the fully qualified parent command name.
 
         This the base command name required to execute it. For example,
         in ``?one two three`` the parent name would be ``one two``.
         """
+
         entries = []
         command = self
         while command.parent is not None:
@@ -621,7 +640,8 @@ class Command(_BaseCommand):
 
     @property
     def parents(self):
-        """List[:class:`Command`]: Retrieves the parents of this command.
+        """
+        List[:class:`Command`]: Retrieves the parents of this command.
 
         If the command has no parents then it returns an empty :class:`list`.
 
@@ -629,6 +649,7 @@ class Command(_BaseCommand):
 
         .. versionadded:: 1.1
         """
+
         entries = []
         command = self
         while command.parent is not None:
@@ -639,19 +660,22 @@ class Command(_BaseCommand):
 
     @property
     def root_parent(self):
-        """Optional[:class:`Command`]: Retrieves the root parent of this command.
+        """
+        Optional[:class:`Command`]: Retrieves the root parent of this command.
 
         If the command has no parents then it returns ``None``.
 
         For example in commands ``?a b c test``, the root parent is ``a``.
         """
+
         if not self.parent:
             return None
         return self.parents[-1]
 
     @property
     def qualified_name(self):
-        """:class:`str`: Retrieves the fully qualified command name.
+        """
+        :class:`str`: Retrieves the fully qualified command name.
 
         This is the full parent name with the command name as well.
         For example, in ``?one two three`` the qualified name would be
@@ -749,7 +773,7 @@ class Command(_BaseCommand):
         if self._after_invoke is not None:
             instance = getattr(self._after_invoke, '__self__', cog)
             if instance:
-                    await self._after_invoke(instance, ctx)
+                await self._after_invoke(instance, ctx)
             else:
                 await self._after_invoke(ctx)
 
@@ -791,7 +815,8 @@ class Command(_BaseCommand):
         await self.call_before_hooks(ctx)
 
     def is_on_cooldown(self, ctx):
-        """Checks whether the command is currently on cooldown.
+        """
+        Checks whether the command is currently on cooldown.
 
         Parameters
         -----------
@@ -803,6 +828,7 @@ class Command(_BaseCommand):
         :class:`bool`
             A boolean indicating if the command is on cooldown.
         """
+
         if not self._buckets.valid:
             return False
 
@@ -812,19 +838,22 @@ class Command(_BaseCommand):
         return bucket.get_tokens(current) == 0
 
     def reset_cooldown(self, ctx):
-        """Resets the cooldown on this command.
+        """
+        Resets the cooldown on this command.
 
         Parameters
         -----------
         ctx: :class:`.Context`
             The invocation context to reset the cooldown under.
         """
+
         if self._buckets.valid:
             bucket = self._buckets.get_bucket(ctx.message)
             bucket.reset()
 
     def get_cooldown_retry_after(self, ctx):
-        """Retrieves the amount of seconds before this command can be tried again.
+        """
+        Retrieves the amount of seconds before this command can be tried again.
 
         .. versionadded:: 1.4
 
@@ -839,6 +868,7 @@ class Command(_BaseCommand):
             The amount of time left on this command's cooldown in seconds.
             If this is ``0.0`` then the command isn't on cooldown.
         """
+
         if self._buckets.valid:
             bucket = self._buckets.get_bucket(ctx.message)
             dt = ctx.message.edited_at or ctx.message.created_at
@@ -876,7 +906,8 @@ class Command(_BaseCommand):
                 await self.call_after_hooks(ctx)
 
     def error(self, coro):
-        """A decorator that registers a coroutine as a local error handler.
+        """
+        A decorator that registers a coroutine as a local error handler.
 
         A local error handler is an :func:`.on_command_error` event limited to
         a single command. However, the :func:`.on_command_error` is still
@@ -900,7 +931,8 @@ class Command(_BaseCommand):
         return coro
 
     def before_invoke(self, coro):
-        """A decorator that registers a coroutine as a pre-invoke hook.
+        """
+        A decorator that registers a coroutine as a pre-invoke hook.
 
         A pre-invoke hook is called directly before the command is
         called. This makes it a useful function to set up database
@@ -920,6 +952,7 @@ class Command(_BaseCommand):
         TypeError
             The coroutine passed is not actually a coroutine.
         """
+
         if not asyncio.iscoroutinefunction(coro):
             raise TypeError('The pre-invoke hook must be a coroutine.')
 
@@ -927,7 +960,8 @@ class Command(_BaseCommand):
         return coro
 
     def after_invoke(self, coro):
-        """A decorator that registers a coroutine as a post-invoke hook.
+        """
+        A decorator that registers a coroutine as a post-invoke hook.
 
         A post-invoke hook is called directly after the command is
         called. This makes it a useful function to clean-up database
@@ -947,6 +981,7 @@ class Command(_BaseCommand):
         TypeError
             The coroutine passed is not actually a coroutine.
         """
+
         if not asyncio.iscoroutinefunction(coro):
             raise TypeError('The post-invoke hook must be a coroutine.')
 
@@ -955,17 +990,22 @@ class Command(_BaseCommand):
 
     @property
     def cog_name(self):
-        """Optional[:class:`str`]: The name of the cog this command belongs to, if any."""
+        """
+        Optional[:class:`str`]: The name of the cog this command belongs to, if any.
+        """
+
         return type(self.cog).__cog_name__ if self.cog is not None else None
 
     @property
     def short_doc(self):
-        """:class:`str`: Gets the "short" documentation of a command.
+        """
+        :class:`str`: Gets the "short" documentation of a command.
 
         By default, this is the :attr:`brief` attribute.
         If that lookup leads to an empty string then the first line of the
         :attr:`help` attribute is used instead.
         """
+
         if self.brief is not None:
             return self.brief
         if self.help is not None:
@@ -985,10 +1025,12 @@ class Command(_BaseCommand):
 
     @property
     def signature(self):
-        """:class:`str`: Returns a POSIX-like signature useful for help command output."""
+        """
+        :class:`str`: Returns a POSIX-like signature useful for help command output.
+        """
+
         if self.usage is not None:
             return self.usage
-
 
         params = self.clean_params
         if not params:
@@ -1024,7 +1066,8 @@ class Command(_BaseCommand):
         return ' '.join(result)
 
     async def can_run(self, ctx):
-        """|coro|
+        """
+        |coro|
 
         Checks if the command can be executed by checking all the predicates
         inside the :attr:`checks` attribute. This also checks whether the
@@ -1077,8 +1120,10 @@ class Command(_BaseCommand):
         finally:
             ctx.command = original
 
+
 class GroupMixin:
-    """A mixin that implements common functionality for classes that behave
+    """
+    A mixin that implements common functionality for classes that behave
     similar to :class:`.Group` and are allowed to register commands.
 
     Attributes
@@ -1089,6 +1134,7 @@ class GroupMixin:
     case_insensitive: :class:`bool`
         Whether the commands should be case insensitive. Defaults to ``False``.
     """
+
     def __init__(self, *args, **kwargs):
         case_insensitive = kwargs.get('case_insensitive', False)
         self.all_commands = _CaseInsensitiveDict() if case_insensitive else {}
@@ -1097,7 +1143,10 @@ class GroupMixin:
 
     @property
     def commands(self):
-        """Set[:class:`.Command`]: A unique set of commands without aliases that are registered."""
+        """
+        Set[:class:`.Command`]: A unique set of commands without aliases that are registered.
+        """
+
         return set(self.all_commands.values())
 
     def recursively_remove_all_commands(self):
@@ -1107,7 +1156,8 @@ class GroupMixin:
             self.remove_command(command.name)
 
     def add_command(self, command):
-        """Adds a :class:`.Command` into the internal list of commands.
+        """
+        Adds a :class:`.Command` into the internal list of commands.
 
         This is usually not called, instead the :meth:`~.GroupMixin.command` or
         :meth:`~.GroupMixin.group` shortcut decorators are used instead.
@@ -1144,7 +1194,8 @@ class GroupMixin:
             self.all_commands[alias] = command
 
     def remove_command(self, name):
-        """Remove a :class:`.Command` from the internal list
+        """
+        Remove a :class:`.Command` from the internal list
         of commands.
 
         This could also be used as a way to remove aliases.
@@ -1160,6 +1211,7 @@ class GroupMixin:
             The command that was removed. If the name is not valid then
             ``None`` is returned instead.
         """
+
         command = self.all_commands.pop(name, None)
 
         # does not exist
@@ -1176,7 +1228,8 @@ class GroupMixin:
         return command
 
     def walk_commands(self):
-        """An iterator that recursively walks through all commands and subcommands.
+        """
+        An iterator that recursively walks through all commands and subcommands.
 
         .. versionchanged:: 1.4
             Duplicates due to aliases are no longer returned
@@ -1186,13 +1239,15 @@ class GroupMixin:
         Union[:class:`.Command`, :class:`.Group`]
             A command or group from the internal list of commands.
         """
+
         for command in self.commands:
             yield command
             if isinstance(command, GroupMixin):
                 yield from command.walk_commands()
 
     def get_command(self, name):
-        """Get a :class:`.Command` from the internal list
+        """
+        Get a :class:`.Command` from the internal list
         of commands.
 
         This could also be used as a way to get aliases.
@@ -1232,7 +1287,8 @@ class GroupMixin:
         return obj
 
     def command(self, *args, **kwargs):
-        """A shortcut decorator that invokes :func:`.command` and adds it to
+        """
+        A shortcut decorator that invokes :func:`.command` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
 
         Returns
@@ -1240,6 +1296,7 @@ class GroupMixin:
         Callable[..., :class:`Command`]
             A decorator that converts the provided method into a Command, adds it to the bot, then returns it.
         """
+
         def decorator(func):
             kwargs.setdefault('parent', self)
             result = command(*args, **kwargs)(func)
@@ -1249,7 +1306,8 @@ class GroupMixin:
         return decorator
 
     def group(self, *args, **kwargs):
-        """A shortcut decorator that invokes :func:`.group` and adds it to
+        """
+        A shortcut decorator that invokes :func:`.group` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
 
         Returns
@@ -1257,6 +1315,7 @@ class GroupMixin:
         Callable[..., :class:`Group`]
             A decorator that converts the provided method into a Group, adds it to the bot, then returns it.
         """
+
         def decorator(func):
             kwargs.setdefault('parent', self)
             result = group(*args, **kwargs)(func)
@@ -1265,8 +1324,10 @@ class GroupMixin:
 
         return decorator
 
+
 class Group(GroupMixin, Command):
-    """A class that implements a grouping protocol for commands to be
+    """
+    A class that implements a grouping protocol for commands to be
     executed as subcommands.
 
     This class is a subclass of :class:`.Command` and thus all options
@@ -1287,18 +1348,21 @@ class Group(GroupMixin, Command):
         Indicates if the group's commands should be case insensitive.
         Defaults to ``False``.
     """
+
     def __init__(self, *args, **attrs):
         self.invoke_without_command = attrs.pop('invoke_without_command', False)
         super().__init__(*args, **attrs)
 
     def copy(self):
-        """Creates a copy of this :class:`Group`.
+        """
+        Creates a copy of this :class:`Group`.
 
         Returns
         --------
         :class:`Group`
             A new instance of this group.
         """
+
         ret = super().copy()
         for cmd in self.commands:
             ret.add_command(cmd.copy())
@@ -1373,8 +1437,10 @@ class Group(GroupMixin, Command):
 
 # Decorators
 
+
 def command(name=None, cls=None, **attrs):
-    """A decorator that transforms a function into a :class:`.Command`
+    """
+    A decorator that transforms a function into a :class:`.Command`
     or if called with :func:`.group`, :class:`.Group`.
 
     By default the ``help`` attribute is received automatically from the
@@ -1403,6 +1469,7 @@ def command(name=None, cls=None, **attrs):
     TypeError
         If the function is not a coroutine or is already a command.
     """
+
     if cls is None:
         cls = Command
 
@@ -1413,8 +1480,10 @@ def command(name=None, cls=None, **attrs):
 
     return decorator
 
+
 def group(name=None, **attrs):
-    """A decorator that transforms a function into a :class:`.Group`.
+    """
+    A decorator that transforms a function into a :class:`.Group`.
 
     This is similar to the :func:`.command` decorator but the ``cls``
     parameter is set to :class:`Group` by default.
@@ -1426,8 +1495,10 @@ def group(name=None, **attrs):
     attrs.setdefault('cls', Group)
     return command(name=name, **attrs)
 
+
 def check(predicate):
-    r"""A decorator that adds a check to the :class:`.Command` or its
+    r"""
+    A decorator that adds a check to the :class:`.Command` or its
     subclasses. These checks could be accessed via :attr:`.Command.checks`.
 
     These checks should be predicates that take in a single parameter taking
@@ -1518,8 +1589,10 @@ def check(predicate):
 
     return decorator
 
+
 def check_any(*checks):
-    r"""A :func:`check` that is added that checks if any of the checks passed
+    r"""
+    A :func:`check` that is added that checks if any of the checks passed
     will pass, i.e. using logical OR.
 
     If all checks fail then :exc:`.CheckAnyFailure` is raised to signal the failure.
@@ -1586,8 +1659,10 @@ def check_any(*checks):
 
     return check(predicate)
 
+
 def has_role(item):
-    """A :func:`.check` that is added that checks if the member invoking the
+    """
+    A :func:`.check` that is added that checks if the member invoking the
     command has the role specified via the name or ID specified.
 
     If a string is specified, you must give the exact name of the role, including
@@ -1627,8 +1702,10 @@ def has_role(item):
 
     return check(predicate)
 
+
 def has_any_role(*items):
-    r"""A :func:`.check` that is added that checks if the member invoking the
+    r"""
+    A :func:`.check` that is added that checks if the member invoking the
     command has **any** of the roles specified. This means that if they have
     one out of the three roles specified, then this check will return `True`.
 
@@ -1658,6 +1735,7 @@ def has_any_role(*items):
         async def cool(ctx):
             await ctx.send('You are cool indeed')
     """
+
     def predicate(ctx):
         if not isinstance(ctx.channel, discord.abc.GuildChannel):
             raise NoPrivateMessage()
@@ -1669,8 +1747,10 @@ def has_any_role(*items):
 
     return check(predicate)
 
+
 def bot_has_role(item):
-    """Similar to :func:`.has_role` except checks if the bot itself has the
+    """
+    Similar to :func:`.has_role` except checks if the bot itself has the
     role.
 
     This check raises one of two special exceptions, :exc:`.BotMissingRole` if the bot
@@ -1698,8 +1778,10 @@ def bot_has_role(item):
         return True
     return check(predicate)
 
+
 def bot_has_any_role(*items):
-    """Similar to :func:`.has_any_role` except checks if the bot itself has
+    """
+    Similar to :func:`.has_any_role` except checks if the bot itself has
     any of the roles listed.
 
     This check raises one of two special exceptions, :exc:`.BotMissingAnyRole` if the bot
@@ -1711,6 +1793,7 @@ def bot_has_any_role(*items):
         Raise :exc:`.BotMissingAnyRole` or :exc:`.NoPrivateMessage`
         instead of generic checkfailure
     """
+
     def predicate(ctx):
         ch = ctx.channel
         if not isinstance(ch, discord.abc.GuildChannel):
@@ -1723,8 +1806,10 @@ def bot_has_any_role(*items):
         raise BotMissingAnyRole(items)
     return check(predicate)
 
+
 def has_permissions(**perms):
-    """A :func:`.check` that is added that checks if the member has all of
+    """
+    A :func:`.check` that is added that checks if the member has all of
     the permissions necessary.
 
     Note that this check operates on the current channel permissions, not the
@@ -1770,8 +1855,10 @@ def has_permissions(**perms):
 
     return check(predicate)
 
+
 def bot_has_permissions(**perms):
-    """Similar to :func:`.has_permissions` except checks if the bot itself has
+    """
+    Similar to :func:`.has_permissions` except checks if the bot itself has
     the permissions listed.
 
     This check raises a special exception, :exc:`.BotMissingPermissions`
@@ -1796,8 +1883,10 @@ def bot_has_permissions(**perms):
 
     return check(predicate)
 
+
 def has_guild_permissions(**perms):
-    """Similar to :func:`.has_permissions`, but operates on guild wide
+    """
+    Similar to :func:`.has_permissions`, but operates on guild wide
     permissions instead of the current channel permissions.
 
     If this check is called in a DM context, it will raise an
@@ -1824,8 +1913,10 @@ def has_guild_permissions(**perms):
 
     return check(predicate)
 
+
 def bot_has_guild_permissions(**perms):
-    """Similar to :func:`.has_guild_permissions`, but checks the bot
+    """
+    Similar to :func:`.has_guild_permissions`, but checks the bot
     members guild permissions.
 
     .. versionadded:: 1.3
@@ -1849,8 +1940,10 @@ def bot_has_guild_permissions(**perms):
 
     return check(predicate)
 
+
 def dm_only():
-    """A :func:`.check` that indicates this command must only be used in a
+    """
+    A :func:`.check` that indicates this command must only be used in a
     DM context. Only private messages are allowed when
     using the command.
 
@@ -1867,8 +1960,10 @@ def dm_only():
 
     return check(predicate)
 
+
 def guild_only():
-    """A :func:`.check` that indicates this command must only be used in a
+    """
+    A :func:`.check` that indicates this command must only be used in a
     guild context only. Basically, no private messages are allowed when
     using the command.
 
@@ -1883,8 +1978,10 @@ def guild_only():
 
     return check(predicate)
 
+
 def is_owner():
-    """A :func:`.check` that checks if the person invoking this command is the
+    """
+    A :func:`.check` that checks if the person invoking this command is the
     owner of the bot.
 
     This is powered by :meth:`.Bot.is_owner`.
@@ -1900,8 +1997,10 @@ def is_owner():
 
     return check(predicate)
 
+
 def is_nsfw():
-    """A :func:`.check` that checks if the channel is a NSFW channel.
+    """
+    A :func:`.check` that checks if the channel is a NSFW channel.
 
     This check raises a special exception, :exc:`.NSFWChannelRequired`
     that is derived from :exc:`.CheckFailure`.
@@ -1911,6 +2010,7 @@ def is_nsfw():
         Raise :exc:`.NSFWChannelRequired` instead of generic :exc:`.CheckFailure`.
         DM channels will also now pass this check.
     """
+
     def pred(ctx):
         ch = ctx.channel
         if ctx.guild is None or (isinstance(ch, discord.TextChannel) and ch.is_nsfw()):
@@ -1918,8 +2018,10 @@ def is_nsfw():
         raise NSFWChannelRequired(ch)
     return check(pred)
 
+
 def cooldown(rate, per, type=BucketType.default):
-    """A decorator that adds a cooldown to a :class:`.Command`
+    """
+    A decorator that adds a cooldown to a :class:`.Command`
 
     A cooldown allows a command to only be used a specific amount
     of times in a specific time frame. These cooldowns can be based
@@ -1950,8 +2052,10 @@ def cooldown(rate, per, type=BucketType.default):
         return func
     return decorator
 
+
 def max_concurrency(number, per=BucketType.default, *, wait=False):
-    """A decorator that adds a maximum concurrency to a :class:`.Command` or its subclasses.
+    """
+    A decorator that adds a maximum concurrency to a :class:`.Command` or its subclasses.
 
     This enables you to only allow a certain number of command invocations at the same time,
     for example if a command takes too long or if only one user can use it at a time. This
@@ -1983,8 +2087,10 @@ def max_concurrency(number, per=BucketType.default, *, wait=False):
         return func
     return decorator
 
+
 def before_invoke(coro):
-    """A decorator that registers a coroutine as a pre-invoke hook.
+    """
+    A decorator that registers a coroutine as a pre-invoke hook.
 
     This allows you to refer to one before invoke hook for several commands that
     do not have to be within the same cog.
@@ -2021,6 +2127,7 @@ def before_invoke(coro):
 
         bot.add_cog(What())
     """
+
     def decorator(func):
         if isinstance(func, Command):
             func.before_invoke(coro)
@@ -2029,14 +2136,17 @@ def before_invoke(coro):
         return func
     return decorator
 
+
 def after_invoke(coro):
-    """A decorator that registers a coroutine as a post-invoke hook.
+    """
+    A decorator that registers a coroutine as a post-invoke hook.
 
     This allows you to refer to one after invoke hook for several commands that
     do not have to be within the same cog.
 
     .. versionadded:: 1.4
     """
+
     def decorator(func):
         if isinstance(func, Command):
             func.after_invoke(coro)

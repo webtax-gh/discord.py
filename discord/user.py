@@ -34,7 +34,9 @@ from .errors import ClientException
 from .colour import Colour
 from .asset import Asset
 
+
 class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts premium_since')):
+
     __slots__ = ()
 
     @property
@@ -80,10 +82,13 @@ class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts
     def system(self):
         return self._has_flag(UserFlags.system)
 
+
 _BaseUser = discord.abc.User
 
+
 class BaseUser(_BaseUser):
-    __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', 'system', '_public_flags', '_state')
+
+    __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', 'system', '_public_flags', '_state',)
 
     def __init__(self, *, state, data):
         self._state = state
@@ -112,7 +117,7 @@ class BaseUser(_BaseUser):
 
     @classmethod
     def _copy(cls, user):
-        self = cls.__new__(cls) # bypass __init__
+        self = cls.__new__(cls)  # bypass __init__
 
         self.name = user.name
         self.id = user.id
@@ -134,12 +139,16 @@ class BaseUser(_BaseUser):
 
     @property
     def public_flags(self):
-        """:class:`PublicUserFlags`: The publicly available flags the user has."""
+        """
+        :class:`PublicUserFlags`: The publicly available flags the user has.
+        """
+
         return PublicUserFlags._from_value(self._public_flags)
 
     @property
     def avatar_url(self):
-        """:class:`Asset`: Returns an :class:`Asset` for the avatar the user has.
+        """
+        :class:`Asset`: Returns an :class:`Asset` for the avatar the user has.
 
         If the user does not have a traditional avatar, an asset for
         the default avatar is returned instead.
@@ -147,14 +156,19 @@ class BaseUser(_BaseUser):
         This is equivalent to calling :meth:`avatar_url_as` with
         the default parameters (i.e. webp/gif detection and a size of 1024).
         """
+
         return self.avatar_url_as(format=None, size=1024)
 
     def is_avatar_animated(self):
-        """:class:`bool`: Indicates if the user has an animated avatar."""
+        """
+        :class:`bool`: Indicates if the user has an animated avatar.
+        """
+
         return bool(self.avatar and self.avatar.startswith('a_'))
 
     def avatar_url_as(self, *, format=None, static_format='webp', size=1024):
-        """Returns an :class:`Asset` for the avatar the user has.
+        """
+        Returns an :class:`Asset` for the avatar the user has.
 
         If the user does not have a traditional avatar, an asset for
         the default avatar is returned instead.
@@ -187,43 +201,58 @@ class BaseUser(_BaseUser):
         :class:`Asset`
             The resulting CDN asset.
         """
+
         return Asset._from_avatar(self._state, self, format=format, static_format=static_format, size=size)
 
     @property
     def default_avatar(self):
-        """:class:`DefaultAvatar`: Returns the default avatar for a given user. This is calculated by the user's discriminator."""
+        """
+        :class:`DefaultAvatar`: Returns the default avatar for a given user. This is calculated by the user's discriminator.
+        """
+
         return try_enum(DefaultAvatar, int(self.discriminator) % len(DefaultAvatar))
 
     @property
     def default_avatar_url(self):
-        """:class:`Asset`: Returns a URL for a user's default avatar."""
+        """
+        :class:`Asset`: Returns a URL for a user's default avatar.
+        """
+
         return Asset(self._state, '/embed/avatars/{}.png'.format(self.default_avatar.value))
 
     @property
     def colour(self):
-        """:class:`Colour`: A property that returns a colour denoting the rendered colour
+        """
+        :class:`Colour`: A property that returns a colour denoting the rendered colour
         for the user. This always returns :meth:`Colour.default`.
 
         There is an alias for this named :attr:`color`.
         """
+
         return Colour.default()
 
     @property
     def color(self):
-        """:class:`Colour`: A property that returns a color denoting the rendered color
+        """
+        :class:`Colour`: A property that returns a color denoting the rendered color
         for the user. This always returns :meth:`Colour.default`.
 
         There is an alias for this named :attr:`colour`.
         """
+
         return self.colour
 
     @property
     def mention(self):
-        """:class:`str`: Returns a string that allows you to mention the given user."""
+        """
+        :class:`str`: Returns a string that allows you to mention the given user.
+        """
+
         return '<@{0.id}>'.format(self)
 
     def permissions_in(self, channel):
-        """An alias for :meth:`abc.GuildChannel.permissions_for`.
+        """
+        An alias for :meth:`abc.GuildChannel.permissions_for`.
 
         Basically equivalent to:
 
@@ -236,27 +265,33 @@ class BaseUser(_BaseUser):
         channel: :class:`abc.GuildChannel`
             The channel to check your permissions for.
         """
+
         return channel.permissions_for(self)
 
     @property
     def created_at(self):
-        """:class:`datetime.datetime`: Returns the user's creation time in UTC.
+        """
+        :class:`datetime.datetime`: Returns the user's creation time in UTC.
 
         This is when the user's Discord account was created."""
+
         return snowflake_time(self.id)
 
     @property
     def display_name(self):
-        """:class:`str`: Returns the user's display name.
+        """
+        :class:`str`: Returns the user's display name.
 
         For regular users this is just their username, but
         if they have a guild specific nickname then that
         is returned instead.
         """
+
         return self.name
 
     def mentioned_in(self, message):
-        """Checks if the user is mentioned in the specified message.
+        """
+        Checks if the user is mentioned in the specified message.
 
         Parameters
         -----------
@@ -278,8 +313,10 @@ class BaseUser(_BaseUser):
 
         return False
 
+
 class ClientUser(BaseUser):
-    """Represents your Discord user.
+    """
+    Represents your Discord user.
 
     .. container:: operations
 
@@ -329,17 +366,21 @@ class ClientUser(BaseUser):
     premium_type: Optional[:class:`PremiumType`]
         Specifies the type of premium a user has (e.g. Nitro or Nitro Classic). Could be None if the user is not premium.
     """
-    __slots__ = BaseUser.__slots__ + \
-                ('email', 'locale', '_flags', 'verified', 'mfa_enabled',
-                 'premium', 'premium_type', '_relationships', '__weakref__')
+
+    __slots__ = BaseUser.__slots__ + (
+        'email', 'locale', '_flags', 'verified', 'mfa_enabled',
+        'premium', 'premium_type', '_relationships', '__weakref__',
+    )
 
     def __init__(self, *, state, data):
         super().__init__(state=state, data=data)
         self._relationships = {}
 
     def __repr__(self):
-        return '<ClientUser id={0.id} name={0.name!r} discriminator={0.discriminator!r}' \
-               ' bot={0.bot} verified={0.verified} mfa_enabled={0.mfa_enabled}>'.format(self)
+        return (
+            '<ClientUser id={0.id} name={0.name!r} discriminator={0.discriminator!r}'
+            ' bot={0.bot} verified={0.verified} mfa_enabled={0.mfa_enabled}>'.format(self)
+        )
 
     def _update(self, data):
         super()._update(data)
@@ -353,7 +394,8 @@ class ClientUser(BaseUser):
         self.premium_type = try_enum(PremiumType, data.get('premium_type', None))
 
     def get_relationship(self, user_id):
-        """Retrieves the :class:`Relationship` if applicable.
+        """
+        Retrieves the :class:`Relationship` if applicable.
 
         .. note::
 
@@ -369,40 +411,48 @@ class ClientUser(BaseUser):
         Optional[:class:`Relationship`]
             The relationship if available or ``None``.
         """
+
         return self._relationships.get(user_id)
 
     @property
     def relationships(self):
-        """List[:class:`User`]: Returns all the relationships that the user has.
+        """
+        List[:class:`User`]: Returns all the relationships that the user has.
 
         .. note::
 
             This can only be used by non-bot accounts.
         """
+
         return list(self._relationships.values())
 
     @property
     def friends(self):
-        r"""List[:class:`User`]: Returns all the users that the user is friends with.
+        r"""
+        List[:class:`User`]: Returns all the users that the user is friends with.
 
         .. note::
 
             This can only be used by non-bot accounts.
         """
+
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.friend]
 
     @property
     def blocked(self):
-        r"""List[:class:`User`]: Returns all the users that the user has blocked.
+        r"""
+        List[:class:`User`]: Returns all the users that the user has blocked.
 
         .. note::
 
             This can only be used by non-bot accounts.
         """
+
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.blocked]
 
     async def edit(self, **fields):
-        """|coro|
+        """
+        |coro|
 
         Edits the current profile of the client.
 
@@ -501,7 +551,8 @@ class ClientUser(BaseUser):
         self._update(data)
 
     async def create_group(self, *recipients):
-        r"""|coro|
+        r"""
+        |coro|
 
         Creates a group direct message with the recipients
         provided. These recipients must be have a relationship
@@ -541,7 +592,8 @@ class ClientUser(BaseUser):
         return GroupChannel(me=self, data=data, state=self._state)
 
     async def edit_settings(self, **kwargs):
-        """|coro|
+        """
+        |coro|
 
         Edits the client user's settings.
 
@@ -616,6 +668,7 @@ class ClientUser(BaseUser):
         :class:`dict`
             The client user's updated settings.
         """
+
         payload = {}
 
         content_filter = kwargs.pop('explicit_content_filter', None)
@@ -625,7 +678,7 @@ class ClientUser(BaseUser):
         friend_flags = kwargs.pop('friend_source_flags', None)
         if friend_flags:
             dicts = [{}, {'mutual_guilds': True}, {'mutual_friends': True},
-            {'mutual_guilds': True, 'mutual_friends': True}, {'all': True}]
+                     {'mutual_guilds': True, 'mutual_friends': True}, {'all': True}]
             payload.update({'friend_source_flags': dicts[friend_flags.value]})
 
         guild_positions = kwargs.pop('guild_positions', None)
@@ -651,8 +704,10 @@ class ClientUser(BaseUser):
         data = await self._state.http.edit_settings(**payload)
         return data
 
+
 class User(BaseUser, discord.abc.Messageable):
-    """Represents a Discord user.
+    """
+    Represents a Discord user.
 
     .. container:: operations
 
@@ -699,15 +754,18 @@ class User(BaseUser, discord.abc.Messageable):
 
     @property
     def dm_channel(self):
-        """Optional[:class:`DMChannel`]: Returns the channel associated with this user if it exists.
+        """
+        Optional[:class:`DMChannel`]: Returns the channel associated with this user if it exists.
 
         If this returns ``None``, you can create a DM channel by calling the
         :meth:`create_dm` coroutine function.
         """
+
         return self._state._get_private_channel_by_user(self.id)
 
     async def create_dm(self):
-        """Creates a :class:`DMChannel` with this user.
+        """
+        Creates a :class:`DMChannel` with this user.
 
         This should be rarely called, as this is done transparently for most
         people.
@@ -717,6 +775,7 @@ class User(BaseUser, discord.abc.Messageable):
         :class:`.DMChannel`
             The channel that was created.
         """
+
         found = self.dm_channel
         if found is not None:
             return found
@@ -727,16 +786,19 @@ class User(BaseUser, discord.abc.Messageable):
 
     @property
     def relationship(self):
-        """Optional[:class:`Relationship`]: Returns the :class:`Relationship` with this user if applicable, ``None`` otherwise.
+        """
+        Optional[:class:`Relationship`]: Returns the :class:`Relationship` with this user if applicable, ``None`` otherwise.
 
         .. note::
 
             This can only be used by non-bot accounts.
         """
+
         return self._state.user.get_relationship(self.id)
 
     async def mutual_friends(self):
-        """|coro|
+        """
+        |coro|
 
         Gets all mutual friends of this user.
 
@@ -756,36 +818,42 @@ class User(BaseUser, discord.abc.Messageable):
         List[:class:`User`]
             The users that are mutual friends.
         """
+
         state = self._state
         mutuals = await state.http.get_mutual_friends(self.id)
         return [User(state=state, data=friend) for friend in mutuals]
 
     def is_friend(self):
-        """:class:`bool`: Checks if the user is your friend.
+        """
+        :class:`bool`: Checks if the user is your friend.
 
         .. note::
 
             This can only be used by non-bot accounts.
         """
+
         r = self.relationship
         if r is None:
             return False
         return r.type is RelationshipType.friend
 
     def is_blocked(self):
-        """:class:`bool`: Checks if the user is blocked.
+        """
+        :class:`bool`: Checks if the user is blocked.
 
         .. note::
 
             This can only be used by non-bot accounts.
         """
+
         r = self.relationship
         if r is None:
             return False
         return r.type is RelationshipType.blocked
 
     async def block(self):
-        """|coro|
+        """
+        |coro|
 
         Blocks the user.
 
@@ -804,7 +872,8 @@ class User(BaseUser, discord.abc.Messageable):
         await self._state.http.add_relationship(self.id, type=RelationshipType.blocked.value)
 
     async def unblock(self):
-        """|coro|
+        """
+        |coro|
 
         Unblocks the user.
 
@@ -819,10 +888,12 @@ class User(BaseUser, discord.abc.Messageable):
         HTTPException
             Unblocking the user failed.
         """
+
         await self._state.http.remove_relationship(self.id)
 
     async def remove_friend(self):
-        """|coro|
+        """
+        |coro|
 
         Removes the user as a friend.
 
@@ -837,10 +908,12 @@ class User(BaseUser, discord.abc.Messageable):
         HTTPException
             Removing the user as a friend failed.
         """
+
         await self._state.http.remove_relationship(self.id)
 
     async def send_friend_request(self):
-        """|coro|
+        """
+        |coro|
 
         Sends the user a friend request.
 
@@ -855,10 +928,12 @@ class User(BaseUser, discord.abc.Messageable):
         HTTPException
             Sending the friend request failed.
         """
+
         await self._state.http.send_friend_request(username=self.name, discriminator=self.discriminator)
 
     async def profile(self):
-        """|coro|
+        """
+        |coro|
 
         Gets the user's profile.
 
@@ -887,8 +962,10 @@ class User(BaseUser, discord.abc.Messageable):
 
         since = data.get('premium_since')
         mutual_guilds = list(filter(None, map(transform, data.get('mutual_guilds', []))))
-        return Profile(flags=data['user'].get('flags', 0),
-                       premium_since=parse_time(since),
-                       mutual_guilds=mutual_guilds,
-                       user=self,
-                       connected_accounts=data['connected_accounts'])
+        return Profile(
+            flags=data['user'].get('flags', 0),
+            premium_since=parse_time(since),
+            mutual_guilds=mutual_guilds,
+            user=self,
+            connected_accounts=data['connected_accounts'],
+        )

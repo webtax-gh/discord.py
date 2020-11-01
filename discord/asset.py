@@ -32,8 +32,10 @@ from . import utils
 VALID_STATIC_FORMATS = frozenset({"jpeg", "jpg", "webp", "png"})
 VALID_AVATAR_FORMATS = VALID_STATIC_FORMATS | {"gif"}
 
+
 class Asset:
-    """Represents a CDN asset on Discord.
+    """
+    Represents a CDN asset on Discord.
 
     .. container:: operations
 
@@ -61,6 +63,7 @@ class Asset:
 
             Returns the hash of the asset.
     """
+
     __slots__ = ('_state', '_url')
 
     BASE = 'https://cdn.discordapp.com'
@@ -136,7 +139,6 @@ class Asset:
 
         return cls(state, '/icons/{0.id}/{0.icon}.{1}?size={2}'.format(guild, format, size))
 
-
     def __str__(self):
         return self.BASE + self._url if self._url is not None else ''
 
@@ -161,7 +163,8 @@ class Asset:
         return hash(self._url)
 
     async def read(self):
-        """|coro|
+        """
+        |coro|
 
         Retrieves the content of this asset as a :class:`bytes` object.
 
@@ -187,6 +190,7 @@ class Asset:
         :class:`bytes`
             The content of the asset.
         """
+
         if not self._url:
             raise DiscordException('Invalid asset (no URL provided)')
 
@@ -196,7 +200,8 @@ class Asset:
         return await self._state.http.get_from_cdn(self.BASE + self._url)
 
     async def save(self, fp, *, seek_begin=True):
-        """|coro|
+        """
+        |coro|
 
         Saves this asset into a file-like object.
 

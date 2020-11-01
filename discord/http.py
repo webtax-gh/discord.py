@@ -39,6 +39,7 @@ from . import __version__, utils
 
 log = logging.getLogger(__name__)
 
+
 async def json_or_text(response):
     text = await response.text(encoding='utf-8')
     try:
@@ -49,6 +50,7 @@ async def json_or_text(response):
         pass
 
     return text
+
 
 class Route:
     BASE = 'https://discord.com/api/v7'
@@ -71,6 +73,7 @@ class Route:
         # the bucket is just method + path w/ major parameters
         return '{0.channel_id}:{0.guild_id}:{0.path}'.format(self)
 
+
 class MaybeUnlock:
     def __init__(self, lock):
         self.lock = lock
@@ -86,9 +89,11 @@ class MaybeUnlock:
         if self._unlock:
             self.lock.release()
 
+
 # For some reason, the Discord voice websocket expects this header to be
 # completely lowercase while aiohttp respects spec and does it as case-insensitive
 aiohttp.hdrs.WEBSOCKET = 'websocket'
+
 
 class HTTPClient:
     """Represents an HTTP client sending HTTP requests to the Discord API."""
@@ -99,7 +104,7 @@ class HTTPClient:
     def __init__(self, connector=None, *, proxy=None, proxy_auth=None, loop=None, unsync_clock=True):
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self.connector = connector
-        self.__session = None # filled in static_login
+        self.__session = None  # filled in static_login
         self._locks = weakref.WeakValueDictionary()
         self._global_over = asyncio.Event()
         self._global_over.set()
@@ -413,23 +418,31 @@ class HTTPClient:
         return self.request(r, json=fields)
 
     def add_reaction(self, channel_id, message_id, emoji):
-        r = Route('PUT', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/@me',
-                  channel_id=channel_id, message_id=message_id, emoji=emoji)
+        r = Route(
+            'PUT', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/@me',
+            channel_id=channel_id, message_id=message_id, emoji=emoji,
+        )
         return self.request(r)
 
     def remove_reaction(self, channel_id, message_id, emoji, member_id):
-        r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/{member_id}',
-                  channel_id=channel_id, message_id=message_id, member_id=member_id, emoji=emoji)
+        r = Route(
+            'DELETE', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/{member_id}',
+            channel_id=channel_id, message_id=message_id, member_id=member_id, emoji=emoji,
+        )
         return self.request(r)
 
     def remove_own_reaction(self, channel_id, message_id, emoji):
-        r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/@me',
-                  channel_id=channel_id, message_id=message_id, emoji=emoji)
+        r = Route(
+            'DELETE', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/@me',
+            channel_id=channel_id, message_id=message_id, emoji=emoji,
+        )
         return self.request(r)
 
     def get_reaction_users(self, channel_id, message_id, emoji, limit, after=None):
-        r = Route('GET', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}',
-                  channel_id=channel_id, message_id=message_id, emoji=emoji)
+        r = Route(
+            'GET', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}',
+            channel_id=channel_id, message_id=message_id, emoji=emoji,
+        )
 
         params = {'limit': limit}
         if after:
@@ -437,14 +450,18 @@ class HTTPClient:
         return self.request(r, params=params)
 
     def clear_reactions(self, channel_id, message_id):
-        r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}/reactions',
-                  channel_id=channel_id, message_id=message_id)
+        r = Route(
+            'DELETE', '/channels/{channel_id}/messages/{message_id}/reactions',
+            channel_id=channel_id, message_id=message_id,
+        )
 
         return self.request(r)
 
     def clear_single_reaction(self, channel_id, message_id, emoji):
-        r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}',
-                   channel_id=channel_id, message_id=message_id, emoji=emoji)
+        r = Route(
+            'DELETE', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}',
+            channel_id=channel_id, message_id=message_id, emoji=emoji,
+        )
         return self.request(r)
 
     def get_message(self, channel_id, message_id):
@@ -470,16 +487,25 @@ class HTTPClient:
         return self.request(Route('GET', '/channels/{channel_id}/messages', channel_id=channel_id), params=params)
 
     def publish_message(self, channel_id, message_id):
-        return self.request(Route('POST', '/channels/{channel_id}/messages/{message_id}/crosspost',
-                                  channel_id=channel_id, message_id=message_id))
+        r = Route(
+            'POST', '/channels/{channel_id}/messages/{message_id}/crosspost',
+            channel_id=channel_id, message_id=message_id,
+        )
+        return self.request(r)
 
     def pin_message(self, channel_id, message_id, reason=None):
-        return self.request(Route('PUT', '/channels/{channel_id}/pins/{message_id}',
-                                  channel_id=channel_id, message_id=message_id), reason=reason)
+        r = Route(
+            'PUT', '/channels/{channel_id}/pins/{message_id}',
+            channel_id=channel_id, message_id=message_id,
+        )
+        return self.request(r, reason=reason)
 
     def unpin_message(self, channel_id, message_id, reason=None):
-        return self.request(Route('DELETE', '/channels/{channel_id}/pins/{message_id}',
-                                  channel_id=channel_id, message_id=message_id), reason=reason)
+        r = Route(
+            'DELETE', '/channels/{channel_id}/pins/{message_id}',
+            channel_id=channel_id, message_id=message_id,
+        )
+        return self.request(r, reason=reason)
 
     def pins_from(self, channel_id):
         return self.request(Route('GET', '/channels/{channel_id}/pins', channel_id=channel_id))
@@ -558,9 +584,10 @@ class HTTPClient:
 
     def edit_channel(self, channel_id, *, reason=None, **options):
         r = Route('PATCH', '/channels/{channel_id}', channel_id=channel_id)
-        valid_keys = ('name', 'parent_id', 'topic', 'bitrate', 'nsfw',
-                      'user_limit', 'position', 'permission_overwrites', 'rate_limit_per_user',
-                      'type')
+        valid_keys = (
+            'name', 'parent_id', 'topic', 'bitrate', 'nsfw', 'user_limit',
+            'position', 'permission_overwrites', 'rate_limit_per_user', 'type',
+        )
         payload = {
             k: v for k, v in options.items() if k in valid_keys
         }

@@ -46,7 +46,8 @@ from .mixins import Hashable
 
 
 class Attachment:
-    """Represents an attachment from Discord.
+    """
+    Represents an attachment from Discord.
 
     Attributes
     ------------
@@ -82,7 +83,10 @@ class Attachment:
         self._http = state.http
 
     def is_spoiler(self):
-        """:class:`bool`: Whether this attachment contains a spoiler."""
+        """
+        :class:`bool`: Whether this attachment contains a spoiler.
+        """
+
         return self.filename.startswith('SPOILER_')
 
     def __repr__(self):
@@ -122,6 +126,7 @@ class Attachment:
         :class:`int`
             The number of bytes written.
         """
+
         data = await self.read(use_cached=use_cached)
         if isinstance(fp, io.IOBase) and fp.writable():
             written = fp.write(data)
@@ -133,7 +138,8 @@ class Attachment:
                 return f.write(data)
 
     async def read(self, *, use_cached=False):
-        """|coro|
+        """
+        |coro|
 
         Retrieves the content of this attachment as a :class:`bytes` object.
 
@@ -163,12 +169,14 @@ class Attachment:
         :class:`bytes`
             The contents of the attachment.
         """
+
         url = self.proxy_url if use_cached else self.url
         data = await self._http.get_from_cdn(url)
         return data
 
     async def to_file(self, *, use_cached=False, spoiler=False):
-        """|coro|
+        """
+        |coro|
 
         Converts the attachment into a :class:`File` suitable for sending via
         :meth:`abc.Messageable.send`.
@@ -209,8 +217,10 @@ class Attachment:
         data = await self.read(use_cached=use_cached)
         return File(io.BytesIO(data), filename=self.filename, spoiler=spoiler)
 
+
 class MessageReference:
-    """Represents a reference to a :class:`Message`.
+    """
+    Represents a reference to a :class:`Message`.
 
     .. versionadded:: 1.5
 
@@ -234,11 +244,15 @@ class MessageReference:
 
     @property
     def cached_message(self):
-        """Optional[:class:`Message`]: The cached message, if found in the internal message cache."""
+        """
+        Optional[:class:`Message`]: The cached message, if found in the internal message cache.
+        """
+
         return self._state._get_message(self.message_id)
 
     def __repr__(self):
         return '<MessageReference message_id={0.message_id!r} channel_id={0.channel_id!r} guild_id={0.guild_id!r}>'.format(self)
+
 
 def flatten_handlers(cls):
     prefix = len('_handle_')
@@ -252,9 +266,11 @@ def flatten_handlers(cls):
     ]
     return cls
 
+
 @flatten_handlers
 class Message(Hashable):
-    r"""Represents a message from Discord.
+    r"""
+    Represents a message from Discord.
 
     There should be no need to create one of these manually.
 
@@ -350,13 +366,15 @@ class Message(Hashable):
         - ``cover_image``: A string representing the embed's image asset ID.
     """
 
-    __slots__ = ('_edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
-                 'mention_everyone', 'embeds', 'id', 'mentions', 'author',
-                 '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
-                 '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
-                 'role_mentions', '_cs_raw_role_mentions', 'type', 'call', 'flags',
-                 '_cs_system_content', '_cs_guild', '_state', 'reactions', 'reference', 
-                 'application', 'activity')
+    __slots__ = (
+        '_edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
+        'mention_everyone', 'embeds', 'id', 'mentions', 'author',
+        '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
+        '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
+        'role_mentions', '_cs_raw_role_mentions', 'type', 'call', 'flags',
+        '_cs_system_content', '_cs_guild', '_state', 'reactions', 'reference',
+        'application', 'activity',
+    )
 
     def __init__(self, *, state, channel, data):
         self._state = state
@@ -575,7 +593,9 @@ class Message(Hashable):
 
     @utils.cached_slot_property('_cs_guild')
     def guild(self):
-        """Optional[:class:`Guild`]: The guild that the message belongs to, if applicable."""
+        """
+        Optional[:class:`Guild`]: The guild that the message belongs to, if applicable.
+        """
         return getattr(self.channel, 'guild', None)
 
     @utils.cached_slot_property('_cs_raw_mentions')
@@ -611,7 +631,8 @@ class Message(Hashable):
 
     @utils.cached_slot_property('_cs_clean_content')
     def clean_content(self):
-        """:class:`str`: A property that returns the content in a "cleaned up"
+        """
+        :class:`str`: A property that returns the content in a "cleaned up"
         manner. This basically means that mentions are transformed
         into the way the client shows it. e.g. ``<#id>`` will transform
         into ``#name``.
@@ -661,36 +682,49 @@ class Message(Hashable):
 
     @property
     def created_at(self):
-        """:class:`datetime.datetime`: The message's creation time in UTC."""
+        """
+        :class:`datetime.datetime`: The message's creation time in UTC.
+        """
+
         return utils.snowflake_time(self.id)
 
     @property
     def edited_at(self):
-        """Optional[:class:`datetime.datetime`]: A naive UTC datetime object containing the edited time of the message."""
+        """
+        Optional[:class:`datetime.datetime`]: A naive UTC datetime object containing the edited time of the message.
+        """
+
         return self._edited_timestamp
 
     @property
     def jump_url(self):
-        """:class:`str`: Returns a URL that allows the client to jump to this message."""
+        """
+        :class:`str`: Returns a URL that allows the client to jump to this message.
+        """
+
         guild_id = getattr(self.guild, 'id', '@me')
         return 'https://discord.com/channels/{0}/{1.channel.id}/{1.id}'.format(guild_id, self)
 
     def is_system(self):
-        """:class:`bool`: Whether the message is a system message.
+        """
+        :class:`bool`: Whether the message is a system message.
 
         .. versionadded:: 1.3
         """
+
         return self.type is not MessageType.default
 
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
-        r""":class:`str`: A property that returns the content that is rendered
+        r"""
+        :class:`str`: A property that returns the content that is rendered
         regardless of the :attr:`Message.type`.
 
         In the case of :attr:`MessageType.default`\, this just returns the
         regular :attr:`Message.content`. Otherwise this returns an English
         message denoting the contents of the system message.
         """
+
 
         if self.type is MessageType.default:
             return self.content
@@ -762,7 +796,8 @@ class Message(Hashable):
             return '{0.author.name} has added {0.content} to this channel'.format(self)
 
     async def delete(self, *, delay=None):
-        """|coro|
+        """
+        |coro|
 
         Deletes the message.
 
@@ -788,6 +823,7 @@ class Message(Hashable):
         HTTPException
             Deleting the message failed.
         """
+
         if delay is not None:
             async def delete():
                 await asyncio.sleep(delay)
@@ -801,7 +837,8 @@ class Message(Hashable):
             await self._state.http.delete_message(self.channel.id, self.id)
 
     async def edit(self, **fields):
-        """|coro|
+        """
+        |coro|
 
         Edits the message.
 
@@ -862,9 +899,9 @@ class Message(Hashable):
         except KeyError:
             pass
         else:
-             flags = MessageFlags._from_value(self.flags.value)
-             flags.suppress_embeds = suppress
-             fields['flags'] = flags.value
+            flags = MessageFlags._from_value(self.flags.value)
+            flags.suppress_embeds = suppress
+            fields['flags'] = flags.value
 
         delete_after = fields.pop('delete_after', None)
 
@@ -888,7 +925,8 @@ class Message(Hashable):
             await self.delete(delay=delete_after)
 
     async def publish(self):
-        """|coro|
+        """
+        |coro|
 
         Publishes this message to your announcement channel.
 
@@ -906,7 +944,8 @@ class Message(Hashable):
         await self._state.http.publish_message(self.channel.id, self.id)
 
     async def pin(self, *, reason=None):
-        """|coro|
+        """
+        |coro|
 
         Pins the message.
 
@@ -935,7 +974,8 @@ class Message(Hashable):
         self.pinned = True
 
     async def unpin(self, *, reason=None):
-        """|coro|
+        """
+        |coro|
 
         Unpins the message.
 
@@ -963,7 +1003,8 @@ class Message(Hashable):
         self.pinned = False
 
     async def add_reaction(self, emoji):
-        """|coro|
+        """
+        |coro|
 
         Add a reaction to the message.
 
@@ -994,7 +1035,8 @@ class Message(Hashable):
         await self._state.http.add_reaction(self.channel.id, self.id, emoji)
 
     async def remove_reaction(self, emoji, member):
-        """|coro|
+        """
+        |coro|
 
         Remove a reaction by the member from the message.
 
@@ -1033,7 +1075,8 @@ class Message(Hashable):
             await self._state.http.remove_reaction(self.channel.id, self.id, emoji, member.id)
 
     async def clear_reaction(self, emoji):
-        """|coro|
+        """
+        |coro|
 
         Clears a specific reaction from the message.
 
@@ -1080,7 +1123,8 @@ class Message(Hashable):
         raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
     async def clear_reactions(self):
-        """|coro|
+        """
+        |coro|
 
         Removes all the reactions from the message.
 
@@ -1093,10 +1137,12 @@ class Message(Hashable):
         Forbidden
             You do not have the proper permissions to remove all the reactions.
         """
+
         await self._state.http.clear_reactions(self.channel.id, self.id)
 
     async def ack(self):
-        """|coro|
+        """
+        |coro|
 
         Marks this message as read.
 

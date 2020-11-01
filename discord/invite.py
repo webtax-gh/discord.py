@@ -30,8 +30,10 @@ from .object import Object
 from .mixins import Hashable
 from .enums import ChannelType, VerificationLevel, try_enum
 
+
 class PartialInviteChannel:
-    """Represents a "partial" invite channel.
+    """
+    Represents a "partial" invite channel.
 
     This model will be given when the user is not part of the
     guild the :class:`Invite` resolves to.
@@ -79,16 +81,24 @@ class PartialInviteChannel:
 
     @property
     def mention(self):
-        """:class:`str`: The string that allows you to mention the channel."""
+        """
+        :class:`str`: The string that allows you to mention the channel.
+        """
+
         return '<#%s>' % self.id
 
     @property
     def created_at(self):
-        """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
+        """
+        :class:`datetime.datetime`: Returns the channel's creation time in UTC.
+        """
+
         return snowflake_time(self.id)
 
+
 class PartialInviteGuild:
-    """Represents a "partial" invite guild.
+    """
+    Represents a "partial" invite guild.
 
     This model will be given when the user is not part of the
     guild the :class:`Invite` resolves to.
@@ -131,8 +141,10 @@ class PartialInviteGuild:
         The partial guild's description.
     """
 
-    __slots__ = ('_state', 'features', 'icon', 'banner', 'id', 'name', 'splash',
-                 'verification_level', 'description')
+    __slots__ = (
+        '_state', 'features', 'icon', 'banner', 'id', 'name', 'splash',
+        'verification_level', 'description',
+    )
 
     def __init__(self, state, data, id):
         self._state = state
@@ -154,63 +166,83 @@ class PartialInviteGuild:
 
     @property
     def created_at(self):
-        """:class:`datetime.datetime`: Returns the guild's creation time in UTC."""
+        """
+        :class:`datetime.datetime`: Returns the guild's creation time in UTC.
+        """
+
         return snowflake_time(self.id)
 
     @property
     def icon_url(self):
-        """:class:`Asset`: Returns the guild's icon asset."""
+        """
+        :class:`Asset`: Returns the guild's icon asset.
+        """
+
         return self.icon_url_as()
 
     def is_icon_animated(self):
-        """:class:`bool`: Returns ``True`` if the guild has an animated icon.
+        """
+        :class:`bool`: Returns ``True`` if the guild has an animated icon.
 
         .. versionadded:: 1.4
         """
         return bool(self.icon and self.icon.startswith('a_'))
 
     def icon_url_as(self, *, format=None, static_format='webp', size=1024):
-        """The same operation as :meth:`Guild.icon_url_as`.
+        """
+        The same operation as :meth:`Guild.icon_url_as`.
 
         Returns
         --------
         :class:`Asset`
             The resulting CDN asset.
         """
+
         return Asset._from_guild_icon(self._state, self, format=format, static_format=static_format, size=size)
 
     @property
     def banner_url(self):
-        """:class:`Asset`: Returns the guild's banner asset."""
+        """
+        :class:`Asset`: Returns the guild's banner asset.
+        """
+
         return self.banner_url_as()
 
     def banner_url_as(self, *, format='webp', size=2048):
-        """The same operation as :meth:`Guild.banner_url_as`.
+        """
+        The same operation as :meth:`Guild.banner_url_as`.
 
         Returns
         --------
         :class:`Asset`
             The resulting CDN asset.
         """
+
         return Asset._from_guild_image(self._state, self.id, self.banner, 'banners', format=format, size=size)
 
     @property
     def splash_url(self):
-        """:class:`Asset`: Returns the guild's invite splash asset."""
+        """
+        :class:`Asset`: Returns the guild's invite splash asset.
+        """
+
         return self.splash_url_as()
 
     def splash_url_as(self, *, format='webp', size=2048):
-        """The same operation as :meth:`Guild.splash_url_as`.
+        """
+        The same operation as :meth:`Guild.splash_url_as`.
 
         Returns
         --------
         :class:`Asset`
             The resulting CDN asset.
         """
+
         return Asset._from_guild_image(self._state, self.id, self.splash, 'splashes', format=format, size=size)
 
 class Invite(Hashable):
-    r"""Represents a Discord :class:`Guild` or :class:`abc.GuildChannel` invite.
+    r"""
+    Represents a Discord :class:`Guild` or :class:`abc.GuildChannel` invite.
 
     Depending on the way this object was created, some of the attributes can
     have a value of ``None``.
@@ -285,9 +317,11 @@ class Invite(Hashable):
         The channel the invite is for.
     """
 
-    __slots__ = ('max_age', 'code', 'guild', 'revoked', 'created_at', 'uses',
-                 'temporary', 'max_uses', 'inviter', 'channel', '_state',
-                 'approximate_member_count', 'approximate_presence_count' )
+    __slots__ = (
+        'max_age', 'code', 'guild', 'revoked', 'created_at', 'uses',
+        'temporary', 'max_uses', 'inviter', 'channel', '_state',
+        'approximate_member_count', 'approximate_presence_count',
+    )
 
     BASE = 'https://discord.gg'
 
@@ -356,24 +390,31 @@ class Invite(Hashable):
 
     def __repr__(self):
         return '<Invite code={0.code!r} guild={0.guild!r} ' \
-                'online={0.approximate_presence_count} ' \
-                'members={0.approximate_member_count}>'.format(self)
+               'online={0.approximate_presence_count} ' \
+               'members={0.approximate_member_count}>'.format(self)
 
     def __hash__(self):
         return hash(self.code)
 
     @property
     def id(self):
-        """:class:`str`: Returns the proper code portion of the invite."""
+        """
+        :class:`str`: Returns the proper code portion of the invite.
+        """
+
         return self.code
 
     @property
     def url(self):
-        """:class:`str`: A property that retrieves the invite URL."""
+        """
+        :class:`str`: A property that retrieves the invite URL.
+        """
+
         return self.BASE + '/' + self.code
 
     async def delete(self, *, reason=None):
-        """|coro|
+        """
+        |coro|
 
         Revokes the instant invite.
 

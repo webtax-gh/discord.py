@@ -30,23 +30,30 @@ from .permissions import PermissionOverwrite, Permissions
 from .colour import Colour
 from .invite import Invite
 
+
 def _transform_verification_level(entry, data):
     return enums.try_enum(enums.VerificationLevel, data)
+
 
 def _transform_default_notifications(entry, data):
     return enums.try_enum(enums.NotificationLevel, data)
 
+
 def _transform_explicit_content_filter(entry, data):
     return enums.try_enum(enums.ContentFilter, data)
+
 
 def _transform_permissions(entry, data):
     return Permissions(data)
 
+
 def _transform_color(entry, data):
     return Colour(data)
 
+
 def _transform_snowflake(entry, data):
     return int(data)
+
 
 def _transform_channel(entry, data):
     if data is None:
@@ -54,15 +61,18 @@ def _transform_channel(entry, data):
     channel = entry.guild.get_channel(int(data)) or Object(id=data)
     return channel
 
+
 def _transform_owner_id(entry, data):
     if data is None:
         return None
     return entry._get_member(int(data))
 
+
 def _transform_inviter_id(entry, data):
     if data is None:
         return None
     return entry._get_member(int(data))
+
 
 def _transform_overwrites(entry, data):
     overwrites = []
@@ -85,6 +95,7 @@ def _transform_overwrites(entry, data):
 
     return overwrites
 
+
 class AuditLogDiff:
     def __len__(self):
         return len(self.__dict__)
@@ -95,6 +106,7 @@ class AuditLogDiff:
     def __repr__(self):
         values = ' '.join('%s=%r' % item for item in self.__dict__.items())
         return '<AuditLogDiff %s>' % values
+
 
 class AuditLogChanges:
     TRANSFORMERS = {
@@ -187,8 +199,10 @@ class AuditLogChanges:
 
         setattr(second, 'roles', data)
 
+
 class AuditLogEntry:
-    r"""Represents an Audit Log entry.
+    r"""
+    Represents an Audit Log entry.
 
     You retrieve these via :meth:`Guild.audit_logs`.
 
@@ -284,7 +298,10 @@ class AuditLogEntry:
 
     @utils.cached_property
     def created_at(self):
-        """:class:`datetime.datetime`: Returns the entry's creation time in UTC."""
+        """
+        :class:`datetime.datetime`: Returns the entry's creation time in UTC.
+        """
+
         return utils.snowflake_time(self.id)
 
     @utils.cached_property
@@ -298,24 +315,36 @@ class AuditLogEntry:
 
     @utils.cached_property
     def category(self):
-        """Optional[:class:`AuditLogActionCategory`]: The category of the action, if applicable."""
+        """
+        Optional[:class:`AuditLogActionCategory`]: The category of the action, if applicable.
+        """
+
         return self.action.category
 
     @utils.cached_property
     def changes(self):
-        """:class:`AuditLogChanges`: The list of changes this entry has."""
+        """
+        :class:`AuditLogChanges`: The list of changes this entry has.
+        """
+
         obj = AuditLogChanges(self, self._changes)
         del self._changes
         return obj
 
     @utils.cached_property
     def before(self):
-        """:class:`AuditLogDiff`: The target's prior state."""
+        """
+        :class:`AuditLogDiff`: The target's prior state.
+        """
+
         return self.changes.before
 
     @utils.cached_property
     def after(self):
-        """:class:`AuditLogDiff`: The target's subsequent state."""
+        """
+        :class:`AuditLogDiff`: The target's subsequent state.
+        """
+
         return self.changes.after
 
     def _convert_target_guild(self, target_id):

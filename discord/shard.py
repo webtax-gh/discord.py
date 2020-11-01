@@ -48,6 +48,7 @@ from .enums import Status
 
 log = logging.getLogger(__name__)
 
+
 class EventType:
     close = 0
     reconnect = 1
@@ -56,8 +57,10 @@ class EventType:
     terminate = 4
     clean_close = 5
 
+
 class EventItem:
-    __slots__ = ('type', 'shard', 'error')
+
+    __slots__ = ('type', 'shard', 'error',)
 
     def __init__(self, etype, shard, error):
         self.type = etype
@@ -77,7 +80,9 @@ class EventItem:
     def __hash__(self):
         return hash(self.type)
 
+
 class Shard:
+
     def __init__(self, ws, client, queue_put):
         self.ws = ws
         self._client = client
@@ -168,8 +173,10 @@ class Shard:
         self._dispatch('shard_disconnect', self.id)
         log.info('Got a request to %s the websocket at Shard ID %s.', exc.op, self.id)
         try:
-            coro = DiscordWebSocket.from_client(self._client, resume=exc.resume, shard_id=self.id,
-                                                session=self.ws.session_id, sequence=self.ws.sequence)
+            coro = DiscordWebSocket.from_client(
+                self._client, resume=exc.resume, shard_id=self.id,
+                session=self.ws.session_id, sequence=self.ws.sequence,
+            )
             self.ws = await asyncio.wait_for(coro, timeout=60.0)
         except self._handled_exceptions as e:
             await self._handle_disconnect(e)
@@ -194,8 +201,10 @@ class Shard:
         else:
             self.launch()
 
+
 class ShardInfo:
-    """A class that gives information and control over a specific shard.
+    """
+    A class that gives information and control over a specific shard.
 
     You can retrieve this object via :meth:`AutoShardedClient.get_shard`
     or :attr:`AutoShardedClient.shards`.
@@ -210,7 +219,7 @@ class ShardInfo:
         The shard count for this cluster. If this is ``None`` then the bot has not started yet.
     """
 
-    __slots__ = ('_parent', 'id', 'shard_count')
+    __slots__ = ('_parent', 'id', 'shard_count',)
 
     def __init__(self, parent, shard_count):
         self._parent = parent
@@ -218,36 +227,45 @@ class ShardInfo:
         self.shard_count = shard_count
 
     def is_closed(self):
-        """:class:`bool`: Whether the shard connection is currently closed."""
+        """
+        :class:`bool`: Whether the shard connection is currently closed.
+        """
+
         return not self._parent.ws.open
 
     async def disconnect(self):
-        """|coro|
+        """
+        |coro|
 
         Disconnects a shard. When this is called, the shard connection will no
         longer be open.
 
         If the shard is already disconnected this does nothing.
         """
+
         if self.is_closed():
             return
 
         await self._parent.disconnect()
 
     async def reconnect(self):
-        """|coro|
+        """
+        |coro|
 
         Disconnects and then connects the shard again.
         """
+
         if not self.is_closed():
             await self._parent.disconnect()
         await self._parent.reconnect()
 
     async def connect(self):
-        """|coro|
+        """
+        |coro|
 
         Connects a shard. If the shard is already connected this does nothing.
         """
+
         if not self.is_closed():
             return
 
@@ -255,11 +273,16 @@ class ShardInfo:
 
     @property
     def latency(self):
-        """:class:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds for this shard."""
+        """
+        :class:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds for this shard.
+        """
+
         return self._parent.ws.latency
 
+
 class AutoShardedClient(Client):
-    """A client similar to :class:`Client` except it handles the complications
+    """
+    A client similar to :class:`Client` except it handles the complications
     of sharding for the user into a more manageable and transparent single
     process bot.
 
@@ -284,6 +307,7 @@ class AutoShardedClient(Client):
     shard_ids: Optional[List[:class:`int`]]
         An optional list of shard_ids to launch the shards with.
     """
+
     def __init__(self, *args, loop=None, **kwargs):
         kwargs.pop('shard_id', None)
         self.shard_ids = kwargs.pop('shard_ids', None)
@@ -314,26 +338,33 @@ class AutoShardedClient(Client):
 
     @property
     def latency(self):
-        """:class:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
+        """
+        :class:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
 
         This operates similarly to :meth:`Client.latency` except it uses the average
         latency of every shard's latency. To get a list of shard latency, check the
         :attr:`latencies` property. Returns ``nan`` if there are no shards ready.
         """
+
         if not self.__shards:
             return float('nan')
         return sum(latency for _, latency in self.latencies) / len(self.__shards)
 
     @property
     def latencies(self):
-        """List[Tuple[:class:`int`, :class:`float`]]: A list of latencies between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
+        """
+        List[Tuple[:class:`int`, :class:`float`]]: A list of latencies between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
 
         This returns a list of tuples with elements ``(shard_id, latency)``.
         """
+
         return [(shard_id, shard.ws.latency) for shard_id, shard in self.__shards.items()]
 
     def get_shard(self, shard_id):
-        """Optional[:class:`ShardInfo`]: Gets the shard information at a given shard ID or ``None`` if not found."""
+        """
+        Optional[:class:`ShardInfo`]: Gets the shard information at a given shard ID or ``None`` if not found.
+        """
+
         try:
             parent = self.__shards[shard_id]
         except KeyError:
@@ -343,12 +374,16 @@ class AutoShardedClient(Client):
 
     @property
     def shards(self):
-        """Mapping[int, :class:`ShardInfo`]: Returns a mapping of shard IDs to their respective info object."""
-        return { shard_id: ShardInfo(parent, self.shard_count) for shard_id, parent in self.__shards.items() }
+        """
+        Mapping[int, :class:`ShardInfo`]: Returns a mapping of shard IDs to their respective info object.
+        """
+
+        return {shard_id: ShardInfo(parent, self.shard_count) for shard_id, parent in self.__shards.items()}
 
     @utils.deprecated('Guild.chunk')
     async def request_offline_members(self, *guilds):
-        r"""|coro|
+        r"""
+        |coro|
 
         Requests previously offline members from the guild to be filled up
         into the :attr:`Guild.members` cache. This function is usually not
@@ -374,6 +409,7 @@ class AutoShardedClient(Client):
         InvalidArgument
             If any guild is unavailable in the collection.
         """
+
         if any(g.unavailable for g in guilds):
             raise InvalidArgument('An unavailable or non-large guild was passed.')
 
@@ -437,10 +473,12 @@ class AutoShardedClient(Client):
                 return
 
     async def close(self):
-        """|coro|
+        """
+        |coro|
 
         Closes the connection to Discord.
         """
+
         if self.is_closed():
             return
 
@@ -460,7 +498,8 @@ class AutoShardedClient(Client):
         self.__queue.put_nowait(EventItem(EventType.clean_close, None, None))
 
     async def change_presence(self, *, activity=None, status=None, afk=False, shard_id=None):
-        """|coro|
+        """
+        |coro|
 
         Changes the client's presence.
 

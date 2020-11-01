@@ -53,20 +53,27 @@ __all__ = (
     'ReconnectWebSocket',
 )
 
+
 class ReconnectWebSocket(Exception):
     """Signals to safely reconnect the websocket."""
+
     def __init__(self, shard_id, *, resume=True):
         self.shard_id = shard_id
         self.resume = resume
         self.op = 'RESUME' if resume else 'IDENTIFY'
 
+
 class WebSocketClosure(Exception):
     """An exception to make up for the fact that aiohttp doesn't signal closure."""
+
     pass
+
 
 EventListener = namedtuple('EventListener', 'predicate event result future')
 
+
 class GatewayRatelimiter:
+
     def __init__(self, count=110, per=60.0):
         # The default is 110 to give room for at least 10 heartbeats per minute
         self.max = count
@@ -190,6 +197,7 @@ class KeepAliveHandler(threading.Thread):
         if self.latency > 10:
             log.warning(self.behind_msg, self.shard_id, self.latency)
 
+
 class VoiceKeepAliveHandler(KeepAliveHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -211,12 +219,15 @@ class VoiceKeepAliveHandler(KeepAliveHandler):
         self.latency = ack_time - self._last_send
         self.recent_ack_latencies.append(self.latency)
 
+
 class DiscordClientWebSocketResponse(aiohttp.ClientWebSocketResponse):
     async def close(self, *, code: int = 4000, message: bytes = b'') -> bool:
         return await super().close(code=code, message=message)
 
+
 class DiscordWebSocket:
-    """Implements a WebSocket for Discord's gateway v6.
+    """
+    Implements a WebSocket for Discord's gateway v6.
 
     Attributes
     -----------
@@ -336,7 +347,8 @@ class DiscordWebSocket:
         return ws
 
     def wait_for(self, event, predicate, result=None):
-        """Waits for a DISPATCH'd event that meets the predicate.
+        """
+        Waits for a DISPATCH'd event that meets the predicate.
 
         Parameters
         -----------
@@ -361,7 +373,10 @@ class DiscordWebSocket:
         return future
 
     async def identify(self):
-        """Sends the IDENTIFY packet."""
+        """
+        Sends the IDENTIFY packet.
+        """
+
         payload = {
             'op': self.IDENTIFY,
             'd': {
@@ -403,7 +418,10 @@ class DiscordWebSocket:
         log.info('Shard ID %s has sent the IDENTIFY payload.', self.shard_id)
 
     async def resume(self):
-        """Sends the RESUME packet."""
+        """
+        Sends the RESUME packet.
+        """
+
         payload = {
             'op': self.RESUME,
             'd': {
@@ -540,7 +558,10 @@ class DiscordWebSocket:
 
     @property
     def latency(self):
-        """:class:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds."""
+        """
+        :class:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
+        """
+
         heartbeat = self._keep_alive
         return float('inf') if heartbeat is None else heartbeat.latency
 
@@ -549,13 +570,15 @@ class DiscordWebSocket:
         return code not in (1000, 4004, 4010, 4011, 4012, 4013, 4014)
 
     async def poll_event(self):
-        """Polls for a DISPATCH event and handles the general gateway loop.
+        """
+        Polls for a DISPATCH event and handles the general gateway loop.
 
         Raises
         ------
         ConnectionClosed
             The websocket connection was terminated for unhandled reasons.
         """
+
         try:
             msg = await self.socket.receive(timeout=self._max_heartbeat_timeout)
             if msg.type is aiohttp.WSMsgType.TEXT:
@@ -654,7 +677,6 @@ class DiscordWebSocket:
         if query is not None:
             payload['d']['query'] = query
 
-
         await self.send_as_json(payload)
 
     async def voice_state(self, guild_id, channel_id, self_mute=False, self_deaf=False):
@@ -679,8 +701,10 @@ class DiscordWebSocket:
         self._close_code = code
         await self.socket.close(code=code)
 
+
 class DiscordVoiceWebSocket:
-    """Implements the websocket protocol for handling voice connections.
+    """
+    Implements the websocket protocol for handling voice connections.
 
     Attributes
     -----------
@@ -763,7 +787,10 @@ class DiscordVoiceWebSocket:
 
     @classmethod
     async def from_client(cls, client, *, resume=False):
-        """Creates a voice websocket for the :class:`VoiceClient`."""
+        """
+        Creates a voice websocket for the :class:`VoiceClient`.
+        """
+
         gateway = 'wss://' + client.endpoint + '/?v=4'
         http = client._state.http
         socket = await http.ws_connect(gateway, compress=15)
@@ -842,8 +869,8 @@ class DiscordVoiceWebSocket:
         state.endpoint_ip = data['ip']
 
         packet = bytearray(70)
-        struct.pack_into('>H', packet, 0, 1) # 1 = Send
-        struct.pack_into('>H', packet, 2, 70) # 70 = Length
+        struct.pack_into('>H', packet, 0, 1)  # 1 = Send
+        struct.pack_into('>H', packet, 2, 70)  # 70 = Length
         struct.pack_into('>I', packet, 4, state.ssrc)
         state.socket.sendto(packet, (state.endpoint_ip, state.voice_port))
         recv = await self.loop.sock_recv(state.socket, 70)
@@ -867,13 +894,19 @@ class DiscordVoiceWebSocket:
 
     @property
     def latency(self):
-        """:class:`float`: Latency between a HEARTBEAT and its HEARTBEAT_ACK in seconds."""
+        """
+        :class:`float`: Latency between a HEARTBEAT and its HEARTBEAT_ACK in seconds.
+        """
+
         heartbeat = self._keep_alive
         return float('inf') if heartbeat is None else heartbeat.latency
 
     @property
     def average_latency(self):
-        """:class:`list`: Average of last 20 HEARTBEAT latencies."""
+        """
+        :class:`list`: Average of last 20 HEARTBEAT latencies.
+        """
+
         heartbeat = self._keep_alive
         if heartbeat is None:
             return float('inf')

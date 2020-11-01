@@ -26,8 +26,10 @@ DEALINGS IN THE SOFTWARE.
 
 from .iterators import ReactionIterator
 
+
 class Reaction:
-    """Represents a reaction to a message.
+    """
+    Represents a reaction to a message.
 
     Depending on the way this object was created, some of the attributes can
     have a value of ``None``.
@@ -63,6 +65,7 @@ class Reaction:
     message: :class:`Message`
         Message this reaction is for.
     """
+
     __slots__ = ('message', 'count', 'emoji', 'me')
 
     def __init__(self, *, message, data, emoji=None):
@@ -73,7 +76,9 @@ class Reaction:
 
     @property
     def custom_emoji(self):
-        """:class:`bool`: If this is a custom emoji."""
+        """
+        :class:`bool`: If this is a custom emoji.
+        """
         return not isinstance(self.emoji, str)
 
     def __eq__(self, other):
@@ -94,7 +99,8 @@ class Reaction:
         return '<Reaction emoji={0.emoji!r} me={0.me} count={0.count}>'.format(self)
 
     async def remove(self, user):
-        """|coro|
+        """
+        |coro|
 
         Remove the reaction by the provided :class:`User` from the message.
 
@@ -122,7 +128,8 @@ class Reaction:
         await self.message.remove_reaction(self.emoji, user)
 
     async def clear(self):
-        """|coro|
+        """
+        |coro|
 
         Clears this reaction from the message.
 
@@ -144,7 +151,8 @@ class Reaction:
         await self.message.clear_reaction(self.emoji)
 
     def users(self, limit=None, after=None):
-        """Returns an :class:`AsyncIterator` representing the users that have reacted to the message.
+        """
+        Returns an :class:`AsyncIterator` representing the users that have reacted to the message.
 
         The ``after`` parameter must represent a member
         and meet the :class:`abc.Snowflake` abc.

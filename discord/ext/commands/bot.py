@@ -42,15 +42,20 @@ from . import errors
 from .help import HelpCommand, DefaultHelpCommand
 from .cog import Cog
 
+
 def when_mentioned(bot, msg):
-    """A callable that implements a command prefix equivalent to being mentioned.
+    """
+    A callable that implements a command prefix equivalent to being mentioned.
 
     These are meant to be passed into the :attr:`.Bot.command_prefix` attribute.
     """
+
     return [bot.user.mention + ' ', '<@!%s> ' % bot.user.id]
 
+
 def when_mentioned_or(*prefixes):
-    """A callable that implements when mentioned or other prefixes provided.
+    """
+    A callable that implements when mentioned or other prefixes provided.
 
     These are meant to be passed into the :attr:`.Bot.command_prefix` attribute.
 
@@ -78,6 +83,7 @@ def when_mentioned_or(*prefixes):
     ----------
     :func:`.when_mentioned`
     """
+
     def inner(bot, msg):
         r = list(prefixes)
         r = when_mentioned(bot, msg) + r
@@ -85,16 +91,21 @@ def when_mentioned_or(*prefixes):
 
     return inner
 
+
 def _is_submodule(parent, child):
     return parent == child or child.startswith(parent + ".")
+
 
 class _DefaultRepr:
     def __repr__(self):
         return '<default-help-command>'
 
+
 _default = _DefaultRepr()
 
+
 class BotBase(GroupMixin):
+
     def __init__(self, command_prefix, help_command=_default, description=None, **options):
         super().__init__(**options)
         self.command_prefix = command_prefix
@@ -150,7 +161,8 @@ class BotBase(GroupMixin):
         await super().close()
 
     async def on_command_error(self, context, exception):
-        """|coro|
+        """
+        |coro|
 
         The default command error handler provided by the bot.
 
@@ -159,6 +171,7 @@ class BotBase(GroupMixin):
 
         This only fires if you do not specify any listeners for command error.
         """
+
         if self.extra_events.get('on_command_error', None):
             return
 
@@ -176,7 +189,8 @@ class BotBase(GroupMixin):
     # global check registration
 
     def check(self, func):
-        r"""A decorator that adds a global check to the bot.
+        r"""
+        A decorator that adds a global check to the bot.
 
         A global check is similar to a :func:`.check` that is applied
         on a per command basis except it is run before any command checks
@@ -200,11 +214,13 @@ class BotBase(GroupMixin):
                 return ctx.command.qualified_name in allowed_commands
 
         """
+
         self.add_check(func)
         return func
 
     def add_check(self, func, *, call_once=False):
-        """Adds a global check to the bot.
+        """
+        Adds a global check to the bot.
 
         This is the non-decorator interface to :meth:`.check`
         and :meth:`.check_once`.
@@ -224,7 +240,8 @@ class BotBase(GroupMixin):
             self._checks.append(func)
 
     def remove_check(self, func, *, call_once=False):
-        """Removes a global check from the bot.
+        """
+        Removes a global check from the bot.
 
         This function is idempotent and will not raise an exception
         if the function is not in the global checks.
@@ -237,6 +254,7 @@ class BotBase(GroupMixin):
             If the function was added with ``call_once=True`` in
             the :meth:`.Bot.add_check` call or using :meth:`.check_once`.
         """
+
         l = self._check_once if call_once else self._checks
 
         try:
@@ -245,7 +263,8 @@ class BotBase(GroupMixin):
             pass
 
     def check_once(self, func):
-        r"""A decorator that adds a "call once" global check to the bot.
+        r"""
+        A decorator that adds a "call once" global check to the bot.
 
         Unlike regular global checks, this one is called only once
         per :meth:`.Command.invoke` call.
@@ -277,8 +296,8 @@ class BotBase(GroupMixin):
             @bot.check_once
             def whitelist(ctx):
                 return ctx.message.author.id in my_whitelist
-
         """
+
         self.add_check(func, call_once=True)
         return func
 
@@ -291,7 +310,8 @@ class BotBase(GroupMixin):
         return await discord.utils.async_all(f(ctx) for f in data)
 
     async def is_owner(self, user):
-        """|coro|
+        """
+        |coro|
 
         Checks if a :class:`~discord.User` or :class:`~discord.Member` is the owner of
         this bot.
@@ -328,7 +348,8 @@ class BotBase(GroupMixin):
                 return user.id == owner_id
 
     def before_invoke(self, coro):
-        """A decorator that registers a coroutine as a pre-invoke hook.
+        """
+        A decorator that registers a coroutine as a pre-invoke hook.
 
         A pre-invoke hook is called directly before the command is
         called. This makes it a useful function to set up database
@@ -353,6 +374,7 @@ class BotBase(GroupMixin):
         TypeError
             The coroutine passed is not actually a coroutine.
         """
+
         if not asyncio.iscoroutinefunction(coro):
             raise TypeError('The pre-invoke hook must be a coroutine.')
 
@@ -360,7 +382,8 @@ class BotBase(GroupMixin):
         return coro
 
     def after_invoke(self, coro):
-        r"""A decorator that registers a coroutine as a post-invoke hook.
+        r"""
+        A decorator that registers a coroutine as a post-invoke hook.
 
         A post-invoke hook is called directly after the command is
         called. This makes it a useful function to clean-up database
@@ -386,6 +409,7 @@ class BotBase(GroupMixin):
         TypeError
             The coroutine passed is not actually a coroutine.
         """
+
         if not asyncio.iscoroutinefunction(coro):
             raise TypeError('The post-invoke hook must be a coroutine.')
 
@@ -395,7 +419,8 @@ class BotBase(GroupMixin):
     # listener registration
 
     def add_listener(self, func, name=None):
-        """The non decorator alternative to :meth:`.listen`.
+        """
+        The non decorator alternative to :meth:`.listen`.
 
         Parameters
         -----------
@@ -414,8 +439,8 @@ class BotBase(GroupMixin):
 
             bot.add_listener(on_ready)
             bot.add_listener(my_message, 'on_message')
-
         """
+
         name = func.__name__ if name is None else name
 
         if not asyncio.iscoroutinefunction(func):
@@ -427,7 +452,8 @@ class BotBase(GroupMixin):
             self.extra_events[name] = [func]
 
     def remove_listener(self, func, name=None):
-        """Removes a listener from the pool of listeners.
+        """
+        Removes a listener from the pool of listeners.
 
         Parameters
         -----------
@@ -447,7 +473,8 @@ class BotBase(GroupMixin):
                 pass
 
     def listen(self, name=None):
-        """A decorator that registers another function as an external
+        """
+        A decorator that registers another function as an external
         event listener. Basically this allows you to listen to multiple
         events from different places e.g. such as :func:`.on_ready`
 
@@ -485,7 +512,8 @@ class BotBase(GroupMixin):
     # cogs
 
     def add_cog(self, cog):
-        """Adds a "cog" to the bot.
+        """
+        Adds a "cog" to the bot.
 
         A cog is a class that has its own event listeners and commands.
 
@@ -509,7 +537,8 @@ class BotBase(GroupMixin):
         self.__cogs[cog.__cog_name__] = cog
 
     def get_cog(self, name):
-        """Gets the cog instance requested.
+        """
+        Gets the cog instance requested.
 
         If the cog is not found, ``None`` is returned instead.
 
@@ -525,10 +554,12 @@ class BotBase(GroupMixin):
         Optional[:class:`Cog`]
             The cog that was requested. If not found, returns ``None``.
         """
+
         return self.__cogs.get(name)
 
     def remove_cog(self, name):
-        """Removes a cog from the bot.
+        """
+        Removes a cog from the bot.
 
         All registered commands and event listeners that the
         cog has registered will be removed as well.
@@ -552,7 +583,10 @@ class BotBase(GroupMixin):
 
     @property
     def cogs(self):
-        """Mapping[:class:`str`, :class:`Cog`]: A read-only mapping of cog name to cog."""
+        """
+        Mapping[:class:`str`, :class:`Cog`]: A read-only mapping of cog name to cog.
+        """
+
         return types.MappingProxyType(self.__cogs)
 
     # extensions
@@ -626,7 +660,8 @@ class BotBase(GroupMixin):
             self.__extensions[key] = lib
 
     def load_extension(self, name):
-        """Loads an extension.
+        """
+        Loads an extension.
 
         An extension is a python module that contains commands, cogs, or
         listeners.
@@ -664,7 +699,8 @@ class BotBase(GroupMixin):
         self._load_from_module_spec(spec, name)
 
     def unload_extension(self, name):
-        """Unloads an extension.
+        """
+        Unloads an extension.
 
         When the extension is unloaded, all commands, listeners, and cogs are
         removed from the bot and the module is un-imported.
@@ -695,7 +731,8 @@ class BotBase(GroupMixin):
         self._call_module_finalizers(lib, name)
 
     def reload_extension(self, name):
-        """Atomically reloads an extension.
+        """
+        Atomically reloads an extension.
 
         This replaces the extension with the same extension, only refreshed. This is
         equivalent to a :meth:`unload_extension` followed by a :meth:`load_extension`
@@ -750,7 +787,10 @@ class BotBase(GroupMixin):
 
     @property
     def extensions(self):
-        """Mapping[:class:`str`, :class:`py:types.ModuleType`]: A read-only mapping of extension name to extension."""
+        """
+        Mapping[:class:`str`, :class:`py:types.ModuleType`]: A read-only mapping of extension name to extension.
+        """
+
         return types.MappingProxyType(self.__extensions)
 
     # help command stuff
@@ -777,7 +817,8 @@ class BotBase(GroupMixin):
     # command processing
 
     async def get_prefix(self, message):
-        """|coro|
+        """
+        |coro|
 
         Retrieves the prefix the bot is listening to
         with the message as a context.
@@ -793,6 +834,7 @@ class BotBase(GroupMixin):
             A list of prefixes or a single prefix that the bot is
             listening for.
         """
+
         prefix = ret = self.command_prefix
         if callable(prefix):
             ret = await discord.utils.maybe_coroutine(prefix, self, message)
@@ -815,7 +857,8 @@ class BotBase(GroupMixin):
         return ret
 
     async def get_context(self, message, *, cls=Context):
-        r"""|coro|
+        r"""
+        |coro|
 
         Returns the invocation context from the message.
 
@@ -886,7 +929,8 @@ class BotBase(GroupMixin):
         return ctx
 
     async def invoke(self, ctx):
-        """|coro|
+        """
+        |coro|
 
         Invokes the command given under the invocation context and
         handles all the internal event dispatch mechanisms.
@@ -896,6 +940,7 @@ class BotBase(GroupMixin):
         ctx: :class:`.Context`
             The invocation context to invoke.
         """
+
         if ctx.command is not None:
             self.dispatch('command', ctx)
             try:
@@ -912,7 +957,8 @@ class BotBase(GroupMixin):
             self.dispatch('command_error', ctx, exc)
 
     async def process_commands(self, message):
-        """|coro|
+        """
+        |coro|
 
         This function processes the commands that have been registered
         to the bot and other groups. Without this coroutine, none of the
@@ -933,6 +979,7 @@ class BotBase(GroupMixin):
         message: :class:`discord.Message`
             The message to process commands for.
         """
+
         if message.author.bot:
             return
 
@@ -942,8 +989,10 @@ class BotBase(GroupMixin):
     async def on_message(self, message):
         await self.process_commands(message)
 
+
 class Bot(BotBase, discord.Client):
-    """Represents a discord bot.
+    """
+    Represents a discord bot.
 
     This class is a subclass of :class:`discord.Client` and as a result
     anything that you can do with a :class:`discord.Client` you can do with
@@ -1010,10 +1059,14 @@ class Bot(BotBase, discord.Client):
 
         .. versionadded:: 1.3
     """
+
     pass
 
+
 class AutoShardedBot(BotBase, discord.AutoShardedClient):
-    """This is similar to :class:`.Bot` except that it is inherited from
+    """
+    This is similar to :class:`.Bot` except that it is inherited from
     :class:`discord.AutoShardedClient` instead.
     """
+
     pass

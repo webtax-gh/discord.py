@@ -30,8 +30,10 @@ from .colour import Colour
 from .mixins import Hashable
 from .utils import snowflake_time
 
+
 class Role(Hashable):
-    """Represents a Discord role in a :class:`Guild`.
+    """
+    Represents a Discord role in a :class:`Guild`.
 
     .. container:: operations
 
@@ -87,8 +89,10 @@ class Role(Hashable):
         Indicates if the role can be mentioned by users.
     """
 
-    __slots__ = ('id', 'name', '_permissions', '_colour', 'position',
-                 'managed', 'mentionable', 'hoist', 'guild', '_state')
+    __slots__ = (
+        'id', 'name', '_permissions', '_colour', 'position',
+        'managed', 'mentionable', 'hoist', 'guild', '_state',
+    )
 
     def __init__(self, *, guild, state, data):
         self.guild = guild
@@ -148,37 +152,58 @@ class Role(Hashable):
         self.mentionable = data.get('mentionable', False)
 
     def is_default(self):
-        """:class:`bool`: Checks if the role is the default role."""
+        """
+        :class:`bool`: Checks if the role is the default role.
+        """
+
         return self.guild.id == self.id
 
     @property
     def permissions(self):
-        """:class:`Permissions`: Returns the role's permissions."""
+        """
+        :class:`Permissions`: Returns the role's permissions.
+        """
+
         return Permissions(self._permissions)
 
     @property
     def colour(self):
-        """:class:`Colour`: Returns the role colour. An alias exists under ``color``."""
+        """
+        :class:`Colour`: Returns the role colour. An alias exists under ``color``.
+        """
+
         return Colour(self._colour)
 
     @property
     def color(self):
-        """:class:`Colour`: Returns the role color. An alias exists under ``colour``."""
+        """
+        :class:`Colour`: Returns the role color. An alias exists under ``colour``.
+        """
+
         return self.colour
 
     @property
     def created_at(self):
-        """:class:`datetime.datetime`: Returns the role's creation time in UTC."""
+        """
+        :class:`datetime.datetime`: Returns the role's creation time in UTC.
+        """
+
         return snowflake_time(self.id)
 
     @property
     def mention(self):
-        """:class:`str`: Returns a string that allows you to mention a role."""
+        """
+        :class:`str`: Returns a string that allows you to mention a role.
+        """
+
         return '<@&%s>' % self.id
 
     @property
     def members(self):
-        """List[:class:`Member`]: Returns all the members with this role."""
+        """
+        List[:class:`Member`]: Returns all the members with this role.
+        """
+
         all_members = self.guild.members
         if self.is_default():
             return all_members
@@ -210,7 +235,8 @@ class Role(Hashable):
         await http.move_role_position(self.guild.id, payload, reason=reason)
 
     async def edit(self, *, reason=None, **fields):
-        """|coro|
+        """
+        |coro|
 
         Edits the role.
 
@@ -218,7 +244,7 @@ class Role(Hashable):
         use this.
 
         All fields are optional.
-        
+
         .. versionchanged:: 1.4
             Can now pass ``int`` to ``colour`` keyword-only parameter.
 
@@ -260,7 +286,7 @@ class Role(Hashable):
             colour = fields['colour']
         except KeyError:
             colour = fields.get('color', self.colour)
-        
+
         if isinstance(colour, int):
             colour = Colour(value=colour)
 
@@ -276,7 +302,8 @@ class Role(Hashable):
         self._update(data)
 
     async def delete(self, *, reason=None):
-        """|coro|
+        """
+        |coro|
 
         Deletes the role.
 

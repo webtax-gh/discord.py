@@ -38,8 +38,10 @@ from .enums import Status, try_enum, UserFlags, HypeSquadHouse
 from .colour import Colour
 from .object import Object
 
+
 class VoiceState:
-    """Represents a Discord user's voice state.
+    """
+    Represents a Discord user's voice state.
 
     Attributes
     ------------
@@ -65,8 +67,10 @@ class VoiceState:
         is not currently in a voice channel.
     """
 
-    __slots__ = ('session_id', 'deaf', 'mute', 'self_mute',
-                 'self_stream', 'self_video', 'self_deaf', 'afk', 'channel')
+    __slots__ = (
+        'session_id', 'deaf', 'mute', 'self_mute',
+        'self_stream', 'self_video', 'self_deaf', 'afk', 'channel',
+    )
 
     def __init__(self, *, data, channel=None):
         self.session_id = data.get('session_id')
@@ -84,6 +88,7 @@ class VoiceState:
 
     def __repr__(self):
         return '<VoiceState self_mute={0.self_mute} self_deaf={0.self_deaf} self_stream={0.self_stream} channel={0.channel!r}>'.format(self)
+
 
 def flatten_user(cls):
     for attr, value in itertools.chain(BaseUser.__dict__.items(), User.__dict__.items()):
@@ -118,11 +123,14 @@ def flatten_user(cls):
 
     return cls
 
+
 _BaseUser = discord.abc.User
+
 
 @flatten_user
 class Member(discord.abc.Messageable, _BaseUser):
-    """Represents a Discord member to a :class:`Guild`.
+    """
+    Represents a Discord member to a :class:`Guild`.
 
     This implements a lot of the functionality of :class:`User`.
 
@@ -162,8 +170,10 @@ class Member(discord.abc.Messageable, _BaseUser):
         Nitro boost on the guild, if available. This could be ``None``.
     """
 
-    __slots__ = ('_roles', 'joined_at', 'premium_since', '_client_status',
-                 'activities', 'guild', 'nick', '_user', '_state')
+    __slots__ = (
+        '_roles', 'joined_at', 'premium_since', '_client_status',
+        'activities', 'guild', 'nick', '_user', '_state',
+    )
 
     def __init__(self, *, data, guild, state):
         self._state = state
@@ -207,7 +217,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         self.nick = data.get('nick', None)
 
     @classmethod
-    def _try_upgrade(cls, *,  data, guild, state):
+    def _try_upgrade(cls, *, data, guild, state):
         # A User object with a 'member' key
         try:
             member_data = data.pop('member')
@@ -230,7 +240,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     @classmethod
     def _copy(cls, member):
-        self = cls.__new__(cls) # to bypass __init__
+        self = cls.__new__(cls)  # to bypass __init__
 
         self._roles = utils.SnowflakeList(member._roles, is_sorted=True)
         self.joined_at = member.joined_at
@@ -289,15 +299,20 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     @property
     def status(self):
-        """:class:`Status`: The member's overall status. If the value is unknown, then it will be a :class:`str` instead."""
+        """
+        :class:`Status`: The member's overall status. If the value is unknown, then it will be a :class:`str` instead.
+        """
+
         return try_enum(Status, self._client_status[None])
 
     @property
     def raw_status(self):
-        """:class:`str`: The member's overall status as a string value.
+        """
+        :class:`str`: The member's overall status as a string value.
 
         .. versionadded:: 1.5
         """
+
         return self._client_status[None]
 
     @status.setter
@@ -307,33 +322,46 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     @property
     def mobile_status(self):
-        """:class:`Status`: The member's status on a mobile device, if applicable."""
+        """
+        :class:`Status`: The member's status on a mobile device, if applicable.
+        """
+
         return try_enum(Status, self._client_status.get('mobile', 'offline'))
 
     @property
     def desktop_status(self):
-        """:class:`Status`: The member's status on the desktop client, if applicable."""
+        """
+        :class:`Status`: The member's status on the desktop client, if applicable.
+        """
+
         return try_enum(Status, self._client_status.get('desktop', 'offline'))
 
     @property
     def web_status(self):
-        """:class:`Status`: The member's status on the web client, if applicable."""
+        """
+        :class:`Status`: The member's status on the web client, if applicable.
+        """
+
         return try_enum(Status, self._client_status.get('web', 'offline'))
 
     def is_on_mobile(self):
-        """:class:`bool`: A helper function that determines if a member is active on a mobile device."""
+        """
+        :class:`bool`: A helper function that determines if a member is active on a mobile device.
+        """
+
         return 'mobile' in self._client_status
 
     @property
     def colour(self):
-        """:class:`Colour`: A property that returns a colour denoting the rendered colour
+        """
+        :class:`Colour`: A property that returns a colour denoting the rendered colour
         for the member. If the default colour is the one rendered then an instance
         of :meth:`Colour.default` is returned.
 
         There is an alias for this named :attr:`color`.
         """
 
-        roles = self.roles[1:] # remove @everyone
+        roles = self.roles[1:]  # remove @everyone
 
         # highest order of the colour is the one that gets rendered.
         # if the highest is the default colour then the next one with a colour
@@ -345,22 +373,26 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     @property
     def color(self):
-        """:class:`Colour`: A property that returns a color denoting the rendered color for
+        """
+        :class:`Colour`: A property that returns a color denoting the rendered color for
         the member. If the default color is the one rendered then an instance of :meth:`Colour.default`
         is returned.
 
         There is an alias for this named :attr:`colour`.
         """
+
         return self.colour
 
     @property
     def roles(self):
-        """List[:class:`Role`]: A :class:`list` of :class:`Role` that the member belongs to. Note
+        """
+        List[:class:`Role`]: A :class:`list` of :class:`Role` that the member belongs to. Note
         that the first element of this list is always the default '@everyone'
         role.
 
         These roles are sorted by their position in the role hierarchy.
         """
+
         result = []
         g = self.guild
         for role_id in self._roles:
@@ -373,35 +405,43 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     @property
     def mention(self):
-        """:class:`str`: Returns a string that allows you to mention the member."""
+        """
+        :class:`str`: Returns a string that allows you to mention the member.
+        """
+
         if self.nick:
             return '<@!%s>' % self.id
         return '<@%s>' % self.id
 
     @property
     def display_name(self):
-        """:class:`str`: Returns the user's display name.
+        """
+        :class:`str`: Returns the user's display name.
 
         For regular users this is just their username, but
         if they have a guild specific nickname then that
         is returned instead.
         """
+
         return self.nick if self.nick is not None else self.name
 
     @property
     def activity(self):
-        """Union[:class:`BaseActivity`, :class:`Spotify`]: Returns the primary
+        """
+        Union[:class:`BaseActivity`, :class:`Spotify`]: Returns the primary
         activity the user is currently doing. Could be ``None`` if no activity is being done.
 
         .. note::
 
             A user may have multiple activities, these can be accessed under :attr:`activities`.
         """
+
         if self.activities:
             return self.activities[0]
 
     def mentioned_in(self, message):
-        """Checks if the member is mentioned in the specified message.
+        """
+        Checks if the member is mentioned in the specified message.
 
         Parameters
         -----------
@@ -413,6 +453,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         :class:`bool`
             Indicates if the member is mentioned in the message.
         """
+
         if message.guild is None or message.guild.id != self.guild.id:
             return False
 
@@ -426,7 +467,8 @@ class Member(discord.abc.Messageable, _BaseUser):
         return False
 
     def permissions_in(self, channel):
-        """An alias for :meth:`abc.GuildChannel.permissions_for`.
+        """
+        An alias for :meth:`abc.GuildChannel.permissions_for`.
 
         Basically equivalent to:
 
@@ -444,15 +486,18 @@ class Member(discord.abc.Messageable, _BaseUser):
         :class:`Permissions`
             The resolved permissions for the member.
         """
+
         return channel.permissions_for(self)
 
     @property
     def top_role(self):
-        """:class:`Role`: Returns the member's highest role.
+        """
+        :class:`Role`: Returns the member's highest role.
 
         This is useful for figuring where a member stands in the role
         hierarchy chain.
         """
+
         guild = self.guild
         if len(self._roles) == 0:
             return guild.default_role
@@ -461,7 +506,8 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     @property
     def guild_permissions(self):
-        """:class:`Permissions`: Returns the member's guild permissions.
+        """
+        :class:`Permissions`: Returns the member's guild permissions.
 
         This only takes into consideration the guild permissions
         and not most of the implied permissions or any of the
@@ -487,32 +533,42 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     @property
     def voice(self):
-        """Optional[:class:`VoiceState`]: Returns the member's current voice state."""
+        """
+        Optional[:class:`VoiceState`]: Returns the member's current voice state.
+        """
+
         return self.guild._voice_state_for(self._user.id)
 
     async def ban(self, **kwargs):
-        """|coro|
+        """
+        |coro|
 
         Bans this member. Equivalent to :meth:`Guild.ban`.
         """
+
         await self.guild.ban(self, **kwargs)
 
     async def unban(self, *, reason=None):
-        """|coro|
+        """
+        |coro|
 
         Unbans this member. Equivalent to :meth:`Guild.unban`.
         """
+
         await self.guild.unban(self, reason=reason)
 
     async def kick(self, *, reason=None):
-        """|coro|
+        """
+        |coro|
 
         Kicks this member. Equivalent to :meth:`Guild.kick`.
         """
+
         await self.guild.kick(self, reason=reason)
 
     async def edit(self, *, reason=None, **fields):
-        """|coro|
+        """
+        |coro|
 
         Edits the member's data.
 
@@ -560,6 +616,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         HTTPException
             The operation failed.
         """
+
         http = self._state.http
         guild_id = self.guild.id
         payload = {}
@@ -603,7 +660,8 @@ class Member(discord.abc.Messageable, _BaseUser):
         # TODO: wait for WS event for modify-in-place behaviour
 
     async def move_to(self, channel, *, reason=None):
-        """|coro|
+        """
+        |coro|
 
         Moves a member to a new voice channel (they must be connected first).
 
@@ -623,10 +681,12 @@ class Member(discord.abc.Messageable, _BaseUser):
         reason: Optional[:class:`str`]
             The reason for doing this action. Shows up on the audit log.
         """
+
         await self.edit(voice_channel=channel, reason=reason)
 
     async def add_roles(self, *roles, reason=None, atomic=True):
-        r"""|coro|
+        r"""
+        |coro|
 
         Gives the member a number of :class:`Role`\s.
 
@@ -664,7 +724,8 @@ class Member(discord.abc.Messageable, _BaseUser):
                 await req(guild_id, user_id, role.id, reason=reason)
 
     async def remove_roles(self, *roles, reason=None, atomic=True):
-        r"""|coro|
+        r"""
+        |coro|
 
         Removes :class:`Role`\s from this member.
 
@@ -692,7 +753,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         """
 
         if not atomic:
-            new_roles = [Object(id=r.id) for r in self.roles[1:]] # remove @everyone
+            new_roles = [Object(id=r.id) for r in self.roles[1:]]  # remove @everyone
             for role in roles:
                 try:
                     new_roles.remove(Object(id=role.id))

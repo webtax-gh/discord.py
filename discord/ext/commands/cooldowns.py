@@ -32,6 +32,7 @@ from collections import deque
 from ...abc import PrivateChannel
 from .errors import MaxConcurrencyReached
 
+
 __all__ = (
     'BucketType',
     'Cooldown',
@@ -39,14 +40,16 @@ __all__ = (
     'MaxConcurrency',
 )
 
+
 class BucketType(Enum):
-    default  = 0
-    user     = 1
-    guild    = 2
-    channel  = 3
-    member   = 4
+
+    default = 0
+    user = 1
+    guild = 2
+    channel = 3
+    member = 4
     category = 5
-    role     = 6
+    role = 6
 
     def get_key(self, msg):
         if self is BucketType.user:
@@ -68,7 +71,8 @@ class BucketType(Enum):
 
 
 class Cooldown:
-    __slots__ = ('rate', 'per', 'type', '_window', '_tokens', '_last')
+
+    __slots__ = ('rate', 'per', 'type', '_window', '_tokens', '_last',)
 
     def __init__(self, rate, per, type):
         self.rate = int(rate)
@@ -132,7 +136,9 @@ class Cooldown:
     def __repr__(self):
         return '<Cooldown rate: {0.rate} per: {0.per} window: {0._window} tokens: {0._tokens}>'.format(self)
 
+
 class CooldownMapping:
+
     def __init__(self, original):
         self._cache = {}
         self._cooldown = original
@@ -180,8 +186,10 @@ class CooldownMapping:
         bucket = self.get_bucket(message, current)
         return bucket.update_rate_limit(current)
 
+
 class _Semaphore:
-    """This class is a version of a semaphore.
+    """
+    This class is a version of a semaphore.
 
     If you're wondering why asyncio.Semaphore isn't being used,
     it's because it doesn't expose the internal value. This internal
@@ -193,7 +201,7 @@ class _Semaphore:
     overkill for what is basically a counter.
     """
 
-    __slots__ = ('value', 'loop', '_waiters')
+    __slots__ = ('value', 'loop', '_waiters',)
 
     def __init__(self, number):
         self.value = number
@@ -239,8 +247,10 @@ class _Semaphore:
         self.value += 1
         self.wake_up()
 
+
 class MaxConcurrency:
-    __slots__ = ('number', 'per', 'wait', '_mapping')
+
+    __slots__ = ('number', 'per', 'wait', '_mapping',)
 
     def __init__(self, number, *, per, wait):
         self._mapping = {}

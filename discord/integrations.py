@@ -30,8 +30,10 @@ from .user import User
 from .errors import InvalidArgument
 from .enums import try_enum, ExpireBehaviour
 
+
 class IntegrationAccount:
-    """Represents an integration account.
+    """
+    Represents an integration account.
 
     .. versionadded:: 1.4
 
@@ -52,8 +54,10 @@ class IntegrationAccount:
     def __repr__(self):
         return '<IntegrationAccount id={0.id} name={0.name!r}>'.format(self)
 
+
 class Integration:
-    """Represents a guild integration.
+    """
+    Represents a guild integration.
 
     .. versionadded:: 1.4
 
@@ -87,10 +91,12 @@ class Integration:
         When the integration was last synced.
     """
 
-    __slots__ = ('id', '_state', 'guild', 'name', 'enabled', 'type',
-                 'syncing', 'role', 'expire_behaviour', 'expire_behavior',
-                 'expire_grace_period', 'synced_at', 'user', 'account',
-                 'enable_emoticons', '_role_id')
+    __slots__ = (
+        'id', '_state', 'guild', 'name', 'enabled', 'type',
+        'syncing', 'role', 'expire_behaviour', 'expire_behavior',
+        'expire_grace_period', 'synced_at', 'user', 'account',
+        'enable_emoticons', '_role_id',
+    )
 
     def __init__(self, *, data, guild):
         self.guild = guild
@@ -118,7 +124,8 @@ class Integration:
         self.account = IntegrationAccount(**integ['account'])
 
     async def edit(self, **fields):
-        """|coro|
+        """
+        |coro|
 
         Edits the integration.
 
@@ -143,6 +150,7 @@ class Integration:
         InvalidArgument
             ``expire_behaviour`` did not receive a :class:`ExpireBehaviour`.
         """
+
         try:
             expire_behaviour = fields['expire_behaviour']
         except KeyError:
@@ -171,7 +179,8 @@ class Integration:
         self.enable_emoticons = enable_emoticons
 
     async def sync(self):
-        """|coro|
+        """
+        |coro|
 
         Syncs the integration.
 
@@ -185,11 +194,13 @@ class Integration:
         HTTPException
             Syncing the integration failed.
         """
+
         await self._state.http.sync_integration(self.guild.id, self.id)
         self.synced_at = datetime.datetime.utcnow()
 
     async def delete(self):
-        """|coro|
+        """
+        |coro|
 
         Deletes the integration.
 
@@ -203,4 +214,5 @@ class Integration:
         HTTPException
             Deleting the integration failed.
         """
+
         await self._state.http.delete_integration(self.guild.id, self.id)

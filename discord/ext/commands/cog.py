@@ -33,8 +33,10 @@ __all__ = (
     'Cog',
 )
 
+
 class CogMeta(type):
-    """A metaclass for defining a cog.
+    """
+    A metaclass for defining a cog.
 
     Note that you should probably not use this directly. It is exposed
     purely for documentation purposes along with making custom metaclasses to intermix
@@ -124,7 +126,7 @@ class CogMeta(type):
                             raise TypeError(no_bot_cog.format(base, elem))
                         listeners[elem] = value
 
-        new_cls.__cog_commands__ = list(commands.values()) # this will be copied in Cog.__new__
+        new_cls.__cog_commands__ = list(commands.values())  # this will be copied in Cog.__new__
 
         listeners_as_list = []
         for listener in listeners.values():
@@ -143,12 +145,15 @@ class CogMeta(type):
     def qualified_name(cls):
         return cls.__cog_name__
 
+
 def _cog_special_method(func):
     func.__cog_special_method__ = None
     return func
 
+
 class Cog(metaclass=CogMeta):
-    """The base class that all cogs must inherit from.
+    """
+    The base class that all cogs must inherit from.
 
     A cog is a collection of commands, listeners, and optional state to
     help group commands together. More information on them can be found on
@@ -199,16 +204,23 @@ class Cog(metaclass=CogMeta):
 
                 This does not include subcommands.
         """
+
         return [c for c in self.__cog_commands__ if c.parent is None]
 
     @property
     def qualified_name(self):
-        """:class:`str`: Returns the cog's specified name, not the class name."""
+        """
+        :class:`str`: Returns the cog's specified name, not the class name.
+        """
+
         return self.__cog_name__
 
     @property
     def description(self):
-        """:class:`str`: Returns the cog's description, typically the cleaned docstring."""
+        """
+        :class:`str`: Returns the cog's description, typically the cleaned docstring.
+        """
+
         try:
             return self.__cog_cleaned_doc__
         except AttributeError:
@@ -216,13 +228,15 @@ class Cog(metaclass=CogMeta):
             return cleaned
 
     def walk_commands(self):
-        """An iterator that recursively walks through this cog's commands and subcommands.
+        """
+        An iterator that recursively walks through this cog's commands and subcommands.
 
         Yields
         ------
         Union[:class:`.Command`, :class:`.Group`]
             A command or group from the cog.
         """
+
         from .core import GroupMixin
         for command in self.__cog_commands__:
             if command.parent is None:
@@ -231,23 +245,29 @@ class Cog(metaclass=CogMeta):
                     yield from command.walk_commands()
 
     def get_listeners(self):
-        """Returns a :class:`list` of (name, function) listener pairs that are defined in this cog.
+        """
+        Returns a :class:`list` of (name, function) listener pairs that are defined in this cog.
 
         Returns
         --------
         List[Tuple[:class:`str`, :ref:`coroutine <coroutine>`]]
             The listeners defined in this cog.
         """
+
         return [(name, getattr(self, method_name)) for name, method_name in self.__cog_listeners__]
 
     @classmethod
     def _get_overridden_method(cls, method):
-        """Return None if the method is not overridden. Otherwise returns the overridden method."""
+        """
+        Return None if the method is not overridden. Otherwise returns the overridden method.
+        """
+
         return getattr(method.__func__, '__cog_special_method__', method)
 
     @classmethod
     def listener(cls, name=None):
-        """A decorator that marks a function as a listener.
+        """
+        A decorator that marks a function as a listener.
 
         This is the cog equivalent of :meth:`.Bot.listen`.
 
@@ -288,48 +308,57 @@ class Cog(metaclass=CogMeta):
 
     @_cog_special_method
     def cog_unload(self):
-        """A special method that is called when the cog gets removed.
+        """
+        A special method that is called when the cog gets removed.
 
         This function **cannot** be a coroutine. It must be a regular
         function.
 
         Subclasses must replace this if they want special unloading behaviour.
         """
+
         pass
 
     @_cog_special_method
     def bot_check_once(self, ctx):
-        """A special method that registers as a :meth:`.Bot.check_once`
+        """
+        A special method that registers as a :meth:`.Bot.check_once`
         check.
 
         This function **can** be a coroutine and must take a sole parameter,
         ``ctx``, to represent the :class:`.Context`.
         """
+
         return True
 
     @_cog_special_method
     def bot_check(self, ctx):
-        """A special method that registers as a :meth:`.Bot.check`
+        """
+        A special method that registers as a :meth:`.Bot.check`
         check.
 
         This function **can** be a coroutine and must take a sole parameter,
         ``ctx``, to represent the :class:`.Context`.
         """
+
         return True
 
     @_cog_special_method
     def cog_check(self, ctx):
-        """A special method that registers as a :func:`commands.check`
+        """
+        A special method that registers as a :func:`commands.check`
         for every command and subcommand in this cog.
 
         This function **can** be a coroutine and must take a sole parameter,
         ``ctx``, to represent the :class:`.Context`.
         """
+
         return True
 
     @_cog_special_method
     async def cog_command_error(self, ctx, error):
-        """A special method that is called whenever an error
+        """
+        A special method that is called whenever an error
         is dispatched inside this cog.
 
         This is similar to :func:`.on_command_error` except only applying
@@ -344,11 +373,13 @@ class Cog(metaclass=CogMeta):
         error: :class:`CommandError`
             The error that happened.
         """
+
         pass
 
     @_cog_special_method
     async def cog_before_invoke(self, ctx):
-        """A special method that acts as a cog local pre-invoke hook.
+        """
+        A special method that acts as a cog local pre-invoke hook.
 
         This is similar to :meth:`.Command.before_invoke`.
 
@@ -359,11 +390,13 @@ class Cog(metaclass=CogMeta):
         ctx: :class:`.Context`
             The invocation context.
         """
+
         pass
 
     @_cog_special_method
     async def cog_after_invoke(self, ctx):
-        """A special method that acts as a cog local post-invoke hook.
+        """
+        A special method that acts as a cog local post-invoke hook.
 
         This is similar to :meth:`.Command.after_invoke`.
 
@@ -374,6 +407,7 @@ class Cog(metaclass=CogMeta):
         ctx: :class:`.Context`
             The invocation context.
         """
+
         pass
 
     def _inject(self, bot):

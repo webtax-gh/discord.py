@@ -32,7 +32,9 @@ from .utils import DISCORD_EPOCH, time_snowflake, maybe_coroutine
 from .object import Object
 from .audit_logs import AuditLogEntry
 
+
 OLDEST_OBJECT = Object(id=0)
+
 
 class _AsyncIterator:
     __slots__ = ()
@@ -89,10 +91,13 @@ class _AsyncIterator:
         else:
             return msg
 
+
 def _identity(x):
     return x
 
+
 class _MappedAsyncIterator(_AsyncIterator):
+
     def __init__(self, iterator, func):
         self.iterator = iterator
         self.func = func
@@ -102,7 +107,9 @@ class _MappedAsyncIterator(_AsyncIterator):
         item = await self.iterator.next()
         return await maybe_coroutine(self.func, item)
 
+
 class _FilteredAsyncIterator(_AsyncIterator):
+
     def __init__(self, iterator, predicate):
         self.iterator = iterator
 
@@ -121,7 +128,9 @@ class _FilteredAsyncIterator(_AsyncIterator):
             if ret:
                 return item
 
+
 class ReactionIterator(_AsyncIterator):
+
     def __init__(self, message, emoji, limit=100, after=None):
         self.message = message
         self.limit = limit
@@ -169,8 +178,10 @@ class ReactionIterator(_AsyncIterator):
                     else:
                         await self.users.put(User(state=self.state, data=element))
 
+
 class HistoryIterator(_AsyncIterator):
-    """Iterator for receiving a channel's message history.
+    """
+    Iterator for receiving a channel's message history.
 
     The messages endpoint has two behaviours we care about here:
     If ``before`` is specified, the messages endpoint returns the `limit`
@@ -203,8 +214,9 @@ class HistoryIterator(_AsyncIterator):
         ``True`` if `after` is specified, otherwise ``False``.
     """
 
-    def __init__(self, messageable, limit,
-                 before=None, after=None, around=None, oldest_first=None):
+    def __init__(
+            self, messageable, limit,
+            before=None, after=None, around=None, oldest_first=None):
 
         if isinstance(before, datetime.datetime):
             before = Object(id=time_snowflake(before, high=False))
@@ -317,11 +329,17 @@ class HistoryIterator(_AsyncIterator):
                 await self.messages.put(self.state.create_message(channel=channel, data=element))
 
     async def _retrieve_messages(self, retrieve):
-        """Retrieve messages and update next parameters."""
+        """
+        Retrieve messages and update next parameters.
+        """
+
         pass
 
     async def _retrieve_messages_before_strategy(self, retrieve):
-        """Retrieve messages using before parameter."""
+        """
+        Retrieve messages using before parameter.
+        """
+
         before = self.before.id if self.before else None
         data = await self.logs_from(self.channel.id, retrieve, before=before)
         if len(data):
@@ -331,7 +349,10 @@ class HistoryIterator(_AsyncIterator):
         return data
 
     async def _retrieve_messages_after_strategy(self, retrieve):
-        """Retrieve messages using after parameter."""
+        """
+        Retrieve messages using after parameter.
+        """
+
         after = self.after.id if self.after else None
         data = await self.logs_from(self.channel.id, retrieve, after=after)
         if len(data):
@@ -341,7 +362,9 @@ class HistoryIterator(_AsyncIterator):
         return data
 
     async def _retrieve_messages_around_strategy(self, retrieve):
-        """Retrieve messages using around parameter."""
+        """
+        Retrieve messages using around parameter.
+        """
         if self.around:
             around = self.around.id if self.around else None
             data = await self.logs_from(self.channel.id, retrieve, around=around)
@@ -349,13 +372,14 @@ class HistoryIterator(_AsyncIterator):
             return data
         return []
 
+
 class AuditLogIterator(_AsyncIterator):
+
     def __init__(self, guild, limit=None, before=None, after=None, oldest_first=None, user_id=None, action_type=None):
         if isinstance(before, datetime.datetime):
             before = Object(id=time_snowflake(before, high=False))
         if isinstance(after, datetime.datetime):
             after = Object(id=time_snowflake(after, high=True))
-
 
         if oldest_first is None:
             self.reverse = after is not None
@@ -373,11 +397,9 @@ class AuditLogIterator(_AsyncIterator):
         self._users = {}
         self._state = guild._state
 
-
         self._filter = None  # entry dict -> bool
 
         self.entries = asyncio.Queue()
-
 
         if self.reverse:
             self._strategy = self._after_strategy
@@ -458,7 +480,8 @@ class AuditLogIterator(_AsyncIterator):
 
 
 class GuildIterator(_AsyncIterator):
-    """Iterator for receiving the client's guilds.
+    """
+    Iterator for receiving the client's guilds.
 
     The guilds endpoint has the same two behaviours as described
     in :class:`HistoryIterator`:
@@ -485,6 +508,7 @@ class GuildIterator(_AsyncIterator):
     after: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
         Object after which all guilds must be.
     """
+
     def __init__(self, bot, limit, before=None, after=None):
 
         if isinstance(before, datetime.datetime):
@@ -563,11 +587,17 @@ class GuildIterator(_AsyncIterator):
                 await self.guilds.put(self.create_guild(element))
 
     async def _retrieve_guilds(self, retrieve):
-        """Retrieve guilds and update next parameters."""
+        """
+        Retrieve guilds and update next parameters.
+        """
+
         pass
 
     async def _retrieve_guilds_before_strategy(self, retrieve):
-        """Retrieve guilds using before parameter."""
+        """
+        Retrieve guilds using before parameter.
+        """
+
         before = self.before.id if self.before else None
         data = await self.get_guilds(retrieve, before=before)
         if len(data):
@@ -577,7 +607,10 @@ class GuildIterator(_AsyncIterator):
         return data
 
     async def _retrieve_guilds_after_strategy(self, retrieve):
-        """Retrieve guilds using after parameter."""
+        """
+        Retrieve guilds using after parameter.
+        """
+
         after = self.after.id if self.after else None
         data = await self.get_guilds(retrieve, after=after)
         if len(data):
@@ -586,9 +619,10 @@ class GuildIterator(_AsyncIterator):
             self.after = Object(id=int(data[0]['id']))
         return data
 
-class MemberIterator(_AsyncIterator):
-    def __init__(self, guild, limit=1000, after=None):
 
+class MemberIterator(_AsyncIterator):
+
+    def __init__(self, guild, limit=1000, after=None):
         if isinstance(after, datetime.datetime):
             after = Object(id=time_snowflake(after, high=True))
 
@@ -630,7 +664,7 @@ class MemberIterator(_AsyncIterator):
                 return
 
             if len(data) < 1000:
-                self.limit = 0 # terminate loop
+                self.limit = 0  # terminate loop
 
             self.after = Object(id=int(data[-1]['user']['id']))
 

@@ -24,6 +24,17 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from .player import AudioPlayer, AudioSource
+from .errors import ClientException, ConnectionClosed
+from .gateway import *
+from .backoff import ExponentialBackoff
+from . import opus, utils
+import threading
+import struct
+import logging
+import socket
+import asyncio
+
 """Some documentation to refer to:
 
 - Our main web socket (mWS) sends opcode 4 with a guild ID and channel ID.
@@ -39,17 +50,6 @@ DEALINGS IN THE SOFTWARE.
 - Finally we can transmit data to endpoint:port.
 """
 
-import asyncio
-import socket
-import logging
-import struct
-import threading
-
-from . import opus, utils
-from .backoff import ExponentialBackoff
-from .gateway import *
-from .errors import ClientException, ConnectionClosed
-from .player import AudioPlayer, AudioSource
 
 try:
     import nacl.secret
@@ -59,8 +59,10 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
+
 class VoiceProtocol:
-    """A class that represents the Discord voice protocol.
+    """
+    A class that represents the Discord voice protocol.
 
     This is an abstract class. The library provides a concrete implementation
     under :class:`VoiceClient`.
@@ -85,7 +87,8 @@ class VoiceProtocol:
         self.channel = channel
 
     async def on_voice_state_update(self, data):
-        """|coro|
+        """
+        |coro|
 
         An abstract method that is called when the client's voice state
         has changed. This corresponds to ``VOICE_STATE_UPDATE``.
@@ -99,10 +102,12 @@ class VoiceProtocol:
 
             __ voice_state_update_payload_
         """
+
         raise NotImplementedError
 
     async def on_voice_server_update(self, data):
-        """|coro|
+        """
+        |coro|
 
         An abstract method that is called when initially connecting to voice.
         This corresponds to ``VOICE_SERVER_UPDATE``.
@@ -116,10 +121,12 @@ class VoiceProtocol:
 
             __ voice_server_update_payload_
         """
+
         raise NotImplementedError
 
     async def connect(self, *, timeout, reconnect):
-        """|coro|
+        """
+        |coro|
 
         An abstract method called when the client initiates the connection request.
 
@@ -139,10 +146,12 @@ class VoiceProtocol:
         reconnect: :class:`bool`
             Whether reconnection is expected.
         """
+
         raise NotImplementedError
 
     async def disconnect(self, *, force):
-        """|coro|
+        """
+        |coro|
 
         An abstract method called when the client terminates the connection.
 
@@ -153,10 +162,12 @@ class VoiceProtocol:
         force: :class:`bool`
             Whether the disconnection was forced.
         """
+
         raise NotImplementedError
 
     def cleanup(self):
-        """This method *must* be called to ensure proper clean-up during a disconnect.
+        """
+        This method *must* be called to ensure proper clean-up during a disconnect.
 
         It is advisable to call this from within :meth:`disconnect` when you are
         completely done with the voice protocol instance.
@@ -165,11 +176,14 @@ class VoiceProtocol:
         currently alive voice clients. Failure to clean-up will cause subsequent
         connections to report that it's still connected.
         """
+
         key_id, _ = self.channel._get_voice_client_key()
         self.client._connection._remove_voice_client(key_id)
 
+
 class VoiceClient(VoiceProtocol):
-    """Represents a Discord voice connection.
+    """
+    Represents a Discord voice connection.
 
     You do not create these, you typically get them from
     e.g. :meth:`VoiceChannel.connect`.
@@ -194,6 +208,7 @@ class VoiceClient(VoiceProtocol):
     loop: :class:`asyncio.AbstractEventLoop`
         The event loop that the voice client is running on.
     """
+
     def __init__(self, client, channel):
         if not has_nacl:
             raise RuntimeError("PyNaCl library needed in order to use voice")
@@ -230,12 +245,18 @@ class VoiceClient(VoiceProtocol):
 
     @property
     def guild(self):
-        """Optional[:class:`Guild`]: The guild we're connected to, if applicable."""
+        """
+        Optional[:class:`Guild`]: The guild we're connected to, if applicable.
+        """
+
         return getattr(self.channel, 'guild', None)
 
     @property
     def user(self):
-        """:class:`ClientUser`: The user connected to voice (i.e. ourselves)."""
+        """
+        :class:`ClientUser`: The user connected to voice (i.e. ourselves).
+        """
+
         return self._state.user
 
     def checked_add(self, attr, value, limit):
@@ -274,7 +295,7 @@ class VoiceClient(VoiceProtocol):
         endpoint = data.get('endpoint')
 
         if endpoint is None or self.token is None:
-            log.warning('Awaiting endpoint... This requires waiting. ' \
+            log.warning('Awaiting endpoint... This requires waiting. '
                         'If timeout occurred considering raising the timeout and reconnecting.')
             return
 
@@ -385,22 +406,26 @@ class VoiceClient(VoiceProtocol):
 
     @property
     def latency(self):
-        """:class:`float`: Latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
+        """
+        :class:`float`: Latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
 
         This could be referred to as the Discord Voice WebSocket latency and is
         an analogue of user's voice latencies as seen in the Discord client.
 
         .. versionadded:: 1.4
         """
+
         ws = self.ws
         return float("inf") if not ws else ws.latency
 
     @property
     def average_latency(self):
-        """:class:`float`: Average of most recent 20 HEARTBEAT latencies in seconds.
+        """
+        :class:`float`: Average of most recent 20 HEARTBEAT latencies in seconds.
 
         .. versionadded:: 1.4
         """
+
         ws = self.ws
         return float("inf") if not ws else ws.average_latency
 
@@ -446,10 +471,12 @@ class VoiceClient(VoiceProtocol):
                     continue
 
     async def disconnect(self, *, force=False):
-        """|coro|
+        """
+        |coro|
 
         Disconnects this voice client from voice.
         """
+
         if not force and not self.is_connected():
             return
 
@@ -467,7 +494,8 @@ class VoiceClient(VoiceProtocol):
                 self.socket.close()
 
     async def move_to(self, channel):
-        """|coro|
+        """
+        |coro|
 
         Moves you to a different voice channel.
 
@@ -476,10 +504,14 @@ class VoiceClient(VoiceProtocol):
         channel: :class:`abc.Snowflake`
             The channel to move to. Must be a voice channel.
         """
+
         await self.channel.guild.change_voice_state(channel=channel)
 
     def is_connected(self):
-        """Indicates if the voice client is connected to voice."""
+        """
+        Indicates if the voice client is connected to voice.
+        """
+
         return self._connected.is_set()
 
     # audio related
@@ -520,7 +552,8 @@ class VoiceClient(VoiceProtocol):
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext + nonce[:4]
 
     def play(self, source, *, after=None):
-        """Plays an :class:`AudioSource`.
+        """
+        Plays an :class:`AudioSource`.
 
         The finalizer, ``after`` is called after the source has been exhausted
         or an error occurred.
@@ -564,35 +597,52 @@ class VoiceClient(VoiceProtocol):
         self._player.start()
 
     def is_playing(self):
-        """Indicates if we're currently playing audio."""
+        """
+        Indicates if we're currently playing audio.
+        """
+
         return self._player is not None and self._player.is_playing()
 
     def is_paused(self):
-        """Indicates if we're playing audio, but if we're paused."""
+        """
+        Indicates if we're playing audio, but if we're paused.
+        """
+
         return self._player is not None and self._player.is_paused()
 
     def stop(self):
-        """Stops playing audio."""
+        """
+        Stops playing audio.
+        """
+
         if self._player:
             self._player.stop()
             self._player = None
 
     def pause(self):
-        """Pauses the audio playing."""
+        """
+        Pauses the audio playing.
+        """
+
         if self._player:
             self._player.pause()
 
     def resume(self):
-        """Resumes the audio playing."""
+        """
+        Resumes the audio playing.
+        """
+
         if self._player:
             self._player.resume()
 
     @property
     def source(self):
-        """Optional[:class:`AudioSource`]: The audio source being played, if playing.
+        """
+        Optional[:class:`AudioSource`]: The audio source being played, if playing.
 
         This property can also be used to change the audio source currently being played.
         """
+
         return self._player.source if self._player else None
 
     @source.setter
@@ -606,7 +656,8 @@ class VoiceClient(VoiceProtocol):
         self._player._set_source(value)
 
     def send_audio_packet(self, data, *, encode=True):
-        """Sends an audio packet composed of the data.
+        """
+        Sends an audio packet composed of the data.
 
         You must be connected to play audio.
 

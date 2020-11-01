@@ -27,8 +27,10 @@ DEALINGS IN THE SOFTWARE.
 from . import utils
 from .mixins import Hashable
 
+
 class Object(Hashable):
-    """Represents a generic Discord object.
+    """
+    Represents a generic Discord object.
 
     The purpose of this class is to allow you to create 'miniature'
     versions of data classes if you want to pass in just an ID. Most functions
@@ -74,5 +76,8 @@ class Object(Hashable):
 
     @property
     def created_at(self):
-        """:class:`datetime.datetime`: Returns the snowflake's creation time in UTC."""
+        """
+        :class:`datetime.datetime`: Returns the snowflake's creation time in UTC.
+        """
+
         return utils.snowflake_time(self.id)

@@ -30,8 +30,10 @@ from .activity import create_activity
 from .invite import Invite
 from .enums import Status, try_enum
 
+
 class WidgetChannel:
-    """Represents a "partial" widget channel.
+    """
+    Represents a "partial" widget channel.
 
     .. container:: operations
 
@@ -60,8 +62,8 @@ class WidgetChannel:
     position: :class:`int`
         The channel's position
     """
-    __slots__ = ('id', 'name', 'position')
 
+    __slots__ = ('id', 'name', 'position',)
 
     def __init__(self, **kwargs):
         self.id = kwargs.pop('id')
@@ -76,16 +78,24 @@ class WidgetChannel:
 
     @property
     def mention(self):
-        """:class:`str`: The string that allows you to mention the channel."""
+        """
+        :class:`str`: The string that allows you to mention the channel.
+        """
+
         return '<#%s>' % self.id
 
     @property
     def created_at(self):
-        """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
+        """
+        :class:`datetime.datetime`: Returns the channel's creation time in UTC.
+        """
+
         return snowflake_time(self.id)
 
+
 class WidgetMember(BaseUser):
-    """Represents a "partial" member of the widget's guild.
+    """
+    Represents a "partial" member of the widget's guild.
 
     .. container:: operations
 
@@ -132,9 +142,12 @@ class WidgetMember(BaseUser):
     connected_channel: Optional[:class:`VoiceChannel`]
         Which channel the member is connected to.
     """
-    __slots__ = ('name', 'status', 'nick', 'avatar', 'discriminator',
-                 'id', 'bot', 'activity', 'deafened', 'suppress', 'muted',
-                 'connected_channel')
+
+    __slots__ = (
+        'name', 'status', 'nick', 'avatar', 'discriminator',
+        'id', 'bot', 'activity', 'deafened', 'suppress', 'muted',
+        'connected_channel',
+    )
 
     def __init__(self, *, state, data, connected_channel=None):
         super().__init__(state=state, data=data)
@@ -155,11 +168,16 @@ class WidgetMember(BaseUser):
 
     @property
     def display_name(self):
-        """:class:`str`: Returns the member's display name."""
+        """
+        :class:`str`: Returns the member's display name.
+        """
+
         return self.nick if self.nick else self.name
 
+
 class Widget:
-    """Represents a :class:`Guild` widget.
+    """
+    Represents a :class:`Guild` widget.
 
     .. container:: operations
 
@@ -195,7 +213,8 @@ class Widget:
             retrieved is capped.
 
     """
-    __slots__ = ('_state', 'channels', '_invite', 'id', 'members', 'name')
+
+    __slots__ = ('_state', 'channels', '_invite', 'id', 'members', 'name',)
 
     def __init__(self, *, state, data):
         self._state = state
@@ -230,21 +249,31 @@ class Widget:
 
     @property
     def created_at(self):
-        """:class:`datetime.datetime`: Returns the member's creation time in UTC."""
+        """
+        :class:`datetime.datetime`: Returns the member's creation time in UTC.
+        """
+
         return snowflake_time(self.id)
 
     @property
     def json_url(self):
-        """:class:`str`: The JSON URL of the widget."""
+        """
+        :class:`str`: The JSON URL of the widget.
+        """
+
         return "https://discord.com/api/guilds/{0.id}/widget.json".format(self)
 
     @property
     def invite_url(self):
-        """Optional[:class:`str`]: The invite URL for the guild, if available."""
+        """
+        Optional[:class:`str`]: The invite URL for the guild, if available.
+        """
+
         return self._invite
 
     async def fetch_invite(self, *, with_counts=True):
-        """|coro|
+        """
+        |coro|
 
         Retrieves an :class:`Invite` from a invite URL or ID.
         This is the same as :meth:`Client.fetch_invite`; the invite
@@ -262,6 +291,7 @@ class Widget:
         :class:`Invite`
             The invite from the URL/ID.
         """
+
         if self._invite:
             invite_id = resolve_invite(self._invite)
             data = await self._state.http.get_invite(invite_id, with_counts=with_counts)

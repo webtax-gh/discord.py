@@ -30,7 +30,6 @@ import copy
 import datetime
 import itertools
 import logging
-import math
 import weakref
 import warnings
 import inspect
@@ -57,14 +56,16 @@ from .embeds import Embed
 from .object import Object
 from .invite import Invite
 
+
 class ChunkRequest:
+
     def __init__(self, guild_id, loop, resolver, *, cache=True):
         self.guild_id = guild_id
         self.resolver = resolver
         self.loop = loop
         self.cache = cache
         self.nonce = os.urandom(16).hex()
-        self.buffer = [] # List[Member]
+        self.buffer = []  # List[Member]
         self.waiters = []
 
     def add_members(self, members):
@@ -97,7 +98,9 @@ class ChunkRequest:
             if not future.done():
                 future.set_result(self.buffer)
 
+
 log = logging.getLogger(__name__)
+
 
 async def logging_coroutine(coroutine, *, info):
     try:
@@ -105,7 +108,9 @@ async def logging_coroutine(coroutine, *, info):
     except Exception:
         log.exception('Exception occurred during %s', info)
 
+
 class ConnectionState:
+
     def __init__(self, *, dispatch, handlers, hooks, syncer, http, loop, **options):
         self.loop = loop
         self.http = http
@@ -132,7 +137,7 @@ class ConnectionState:
             raise TypeError('allowed_mentions parameter must be AllowedMentions')
 
         self.allowed_mentions = allowed_mentions
-        self._chunk_requests = {} # Dict[Union[int, str], ChunkRequest]
+        self._chunk_requests = {}  # Dict[Union[int, str], ChunkRequest]
 
         activity = options.get('activity', None)
         if activity:
@@ -379,7 +384,7 @@ class ConnectionState:
         return channel or Object(id=channel_id), guild
 
     async def chunker(self, guild_id, query='', limit=0, *, nonce=None):
-        ws = self._get_websocket(guild_id) # This is ignored upstream
+        ws = self._get_websocket(guild_id)  # This is ignored upstream
         await ws.request_chunks(guild_id, query=query, limit=limit, nonce=nonce)
 
     async def query_members(self, guild, query, limit, user_ids, cache):
@@ -436,7 +441,7 @@ class ConnectionState:
             try:
                 del self._ready_state
             except AttributeError:
-                pass # already been deleted somehow
+                pass  # already been deleted somehow
 
             # call GUILD_SYNC after we're done chunking
             if not self.is_bot:
@@ -570,7 +575,7 @@ class ConnectionState:
             emoji = self._upgrade_partial_emoji(emoji)
             try:
                 reaction = message._remove_reaction(data, emoji, raw.user_id)
-            except (AttributeError, ValueError): # eventual consistency lol
+            except (AttributeError, ValueError):  # eventual consistency lol
                 pass
             else:
                 user = self._get_reaction_user(message.channel, raw.user_id)
@@ -588,7 +593,7 @@ class ConnectionState:
         if message is not None:
             try:
                 reaction = message._clear_emoji(emoji)
-            except (AttributeError, ValueError): # eventual consistency lol
+            except (AttributeError, ValueError):  # eventual consistency lol
                 pass
             else:
                 if reaction:
@@ -1098,7 +1103,9 @@ class ConnectionState:
     def create_message(self, *, channel, data):
         return Message(state=self, channel=channel, data=data)
 
+
 class AutoShardedConnectionState(ConnectionState):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._ready_task = None
@@ -1162,8 +1169,8 @@ class AutoShardedConnectionState(ConnectionState):
                 await utils.sane_wait_for(futures, timeout=timeout)
             except asyncio.TimeoutError:
                 log.warning('Shard ID %s failed to wait for chunks (timeout=%.2f) for %d guilds', shard_id,
-                                                                                                  timeout,
-                                                                                                  len(guilds))
+                            timeout,
+                            len(guilds))
             for guild in children:
                 if guild.unavailable is False:
                     self.dispatch('guild_available', guild)
@@ -1176,7 +1183,7 @@ class AutoShardedConnectionState(ConnectionState):
         try:
             del self._ready_state
         except AttributeError:
-            pass # already been deleted somehow
+            pass  # already been deleted somehow
 
         # regular users cannot shard so we won't worry about it here.
 

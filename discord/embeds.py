@@ -29,6 +29,7 @@ import datetime
 from . import utils
 from .colour import Colour
 
+
 class _EmptyEmbed:
     def __bool__(self):
         return False
@@ -39,7 +40,9 @@ class _EmptyEmbed:
     def __len__(self):
         return 0
 
+
 EmptyEmbed = _EmptyEmbed()
+
 
 class EmbedProxy:
     def __init__(self, layer):
@@ -54,8 +57,10 @@ class EmbedProxy:
     def __getattr__(self, attr):
         return EmptyEmbed
 
+
 class Embed:
-    """Represents a Discord embed.
+    """
+    Represents a Discord embed.
 
     .. container:: operations
 
@@ -97,9 +102,11 @@ class Embed:
         to denote that the value or attribute is empty.
     """
 
-    __slots__ = ('title', 'url', 'type', '_timestamp', '_colour', '_footer',
-                 '_image', '_thumbnail', '_video', '_provider', '_author',
-                 '_fields', 'description')
+    __slots__ = (
+        'title', 'url', 'type', '_timestamp', '_colour', '_footer',
+        '_image', '_thumbnail', '_video', '_provider', '_author',
+        '_fields', 'description',
+    )
 
     Empty = EmptyEmbed
 
@@ -125,7 +132,8 @@ class Embed:
 
     @classmethod
     def from_dict(cls, data):
-        """Converts a :class:`dict` to a :class:`Embed` provided it is in the
+        """
+        Converts a :class:`dict` to a :class:`Embed` provided it is in the
         format that Discord expects it to be in.
 
         You can find out about this format in the `official Discord documentation`__.
@@ -139,6 +147,7 @@ class Embed:
         data: :class:`dict`
             The dictionary to convert into an embed.
         """
+
         # we are bypassing __init__ here since it doesn't apply here
         self = cls.__new__(cls)
 
@@ -172,7 +181,10 @@ class Embed:
         return self
 
     def copy(self):
-        """Returns a shallow copy of the embed."""
+        """
+        Returns a shallow copy of the embed.
+        """
+
         return Embed.from_dict(self.to_dict())
 
     def __len__(self):
@@ -224,16 +236,19 @@ class Embed:
 
     @property
     def footer(self):
-        """Union[:class:`EmbedProxy`, :attr:`Empty`]: Returns an ``EmbedProxy`` denoting the footer contents.
+        """
+        Union[:class:`EmbedProxy`, :attr:`Empty`]: Returns an ``EmbedProxy`` denoting the footer contents.
 
         See :meth:`set_footer` for possible values you can access.
 
         If the attribute has no value then :attr:`Empty` is returned.
         """
+
         return EmbedProxy(getattr(self, '_footer', {}))
 
     def set_footer(self, *, text=EmptyEmbed, icon_url=EmptyEmbed):
-        """Sets the footer for the embed content.
+        """
+        Sets the footer for the embed content.
 
         This function returns the class instance to allow for fluent-style
         chaining.
@@ -257,7 +272,8 @@ class Embed:
 
     @property
     def image(self):
-        """Union[:class:`EmbedProxy`, :attr:`Empty`]: Returns an ``EmbedProxy`` denoting the image contents.
+        """
+        Union[:class:`EmbedProxy`, :attr:`Empty`]: Returns an ``EmbedProxy`` denoting the image contents.
 
         Possible attributes you can access are:
 
@@ -268,10 +284,12 @@ class Embed:
 
         If the attribute has no value then :attr:`Empty` is returned.
         """
+
         return EmbedProxy(getattr(self, '_image', {}))
 
     def set_image(self, *, url):
-        """Sets the image for the embed content.
+        """
+        Sets the image for the embed content.
 
         This function returns the class instance to allow for fluent-style
         chaining.
@@ -299,7 +317,8 @@ class Embed:
 
     @property
     def thumbnail(self):
-        """Union[:class:`EmbedProxy`, :attr:`Empty`]: Returns an ``EmbedProxy`` denoting the thumbnail contents.
+        """
+        Union[:class:`EmbedProxy`, :attr:`Empty`]: Returns an ``EmbedProxy`` denoting the thumbnail contents.
 
         Possible attributes you can access are:
 
@@ -310,10 +329,12 @@ class Embed:
 
         If the attribute has no value then :attr:`Empty` is returned.
         """
+
         return EmbedProxy(getattr(self, '_thumbnail', {}))
 
     def set_thumbnail(self, *, url):
-        """Sets the thumbnail for the embed content.
+        """
+        Sets the thumbnail for the embed content.
 
         This function returns the class instance to allow for fluent-style
         chaining.
@@ -341,7 +362,8 @@ class Embed:
 
     @property
     def video(self):
-        """Union[:class:`EmbedProxy`, :attr:`Empty`]: Returns an ``EmbedProxy`` denoting the video contents.
+        """
+        Union[:class:`EmbedProxy`, :attr:`Empty`]: Returns an ``EmbedProxy`` denoting the video contents.
 
         Possible attributes include:
 
@@ -351,30 +373,36 @@ class Embed:
 
         If the attribute has no value then :attr:`Empty` is returned.
         """
+
         return EmbedProxy(getattr(self, '_video', {}))
 
     @property
     def provider(self):
-        """Union[:class:`EmbedProxy`, :attr:`Empty`]: Returns an ``EmbedProxy`` denoting the provider contents.
+        """
+        Union[:class:`EmbedProxy`, :attr:`Empty`]: Returns an ``EmbedProxy`` denoting the provider contents.
 
         The only attributes that might be accessed are ``name`` and ``url``.
 
         If the attribute has no value then :attr:`Empty` is returned.
         """
+
         return EmbedProxy(getattr(self, '_provider', {}))
 
     @property
     def author(self):
-        """Union[:class:`EmbedProxy`, :attr:`Empty`]: Returns an ``EmbedProxy`` denoting the author contents.
+        """
+        Union[:class:`EmbedProxy`, :attr:`Empty`]: Returns an ``EmbedProxy`` denoting the author contents.
 
         See :meth:`set_author` for possible values you can access.
 
         If the attribute has no value then :attr:`Empty` is returned.
         """
+
         return EmbedProxy(getattr(self, '_author', {}))
 
     def set_author(self, *, name, url=EmptyEmbed, icon_url=EmptyEmbed):
-        """Sets the author for the embed content.
+        """
+        Sets the author for the embed content.
 
         This function returns the class instance to allow for fluent-style
         chaining.
@@ -402,13 +430,15 @@ class Embed:
         return self
 
     def remove_author(self):
-        """Clears embed's author information.
+        """
+        Clears embed's author information.
 
         This function returns the class instance to allow for fluent-style
         chaining.
 
         .. versionadded:: 1.4
         """
+
         try:
             del self._author
         except AttributeError:
@@ -418,16 +448,19 @@ class Embed:
 
     @property
     def fields(self):
-        """Union[List[:class:`EmbedProxy`], :attr:`Empty`]: Returns a :class:`list` of ``EmbedProxy`` denoting the field contents.
+        """
+        Union[List[:class:`EmbedProxy`], :attr:`Empty`]: Returns a :class:`list` of ``EmbedProxy`` denoting the field contents.
 
         See :meth:`add_field` for possible values you can access.
 
         If the attribute has no value then :attr:`Empty` is returned.
         """
+
         return [EmbedProxy(d) for d in getattr(self, '_fields', [])]
 
     def add_field(self, *, name, value, inline=True):
-        """Adds a field to the embed object.
+        """
+        Adds a field to the embed object.
 
         This function returns the class instance to allow for fluent-style
         chaining.
@@ -456,7 +489,8 @@ class Embed:
         return self
 
     def insert_field_at(self, index, *, name, value, inline=True):
-        """Inserts a field before a specified index to the embed.
+        """
+        Inserts a field before a specified index to the embed.
 
         This function returns the class instance to allow for fluent-style
         chaining.
@@ -489,14 +523,18 @@ class Embed:
         return self
 
     def clear_fields(self):
-        """Removes all fields from this embed."""
+        """
+        Removes all fields from this embed.
+        """
+
         try:
             self._fields.clear()
         except AttributeError:
             self._fields = []
 
     def remove_field(self, index):
-        """Removes a field at a specified index.
+        """
+        Removes a field at a specified index.
 
         If the index is invalid or out of bounds then the error is
         silently swallowed.
@@ -511,13 +549,15 @@ class Embed:
         index: :class:`int`
             The index of the field to remove.
         """
+
         try:
             del self._fields[index]
         except (AttributeError, IndexError):
             pass
 
     def set_field_at(self, index, *, name, value, inline=True):
-        """Modifies a field to the embed object.
+        """
+        Modifies a field to the embed object.
 
         The index must point to a valid pre-existing field.
 
@@ -552,7 +592,9 @@ class Embed:
         return self
 
     def to_dict(self):
-        """Converts this embed object into a dict."""
+        """
+        Converts this embed object into a dict.
+        """
 
         # add in the raw data into the dict
         result = {

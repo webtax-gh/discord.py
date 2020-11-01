@@ -27,8 +27,10 @@ DEALINGS IN THE SOFTWARE.
 import discord.abc
 import discord.utils
 
+
 class Context(discord.abc.Messageable):
-    r"""Represents the context in which a command is being invoked under.
+    r"""
+    Represents the context in which a command is being invoked under.
 
     This class contains a lot of meta data to help you understand more about
     the invocation context. This class is not created manually and is instead
@@ -85,7 +87,8 @@ class Context(discord.abc.Messageable):
         self._state = self.message._state
 
     async def invoke(self, *args, **kwargs):
-        r"""|coro|
+        r"""
+        |coro|
 
         Calls a command with the arguments given.
 
@@ -136,7 +139,8 @@ class Context(discord.abc.Messageable):
         return ret
 
     async def reinvoke(self, *, call_hooks=False, restart=True):
-        """|coro|
+        """
+        |coro|
 
         Calls the command again.
 
@@ -165,6 +169,7 @@ class Context(discord.abc.Messageable):
         ValueError
             The context to reinvoke is not valid.
         """
+
         cmd = self.command
         view = self.view
         if cmd is None:
@@ -180,7 +185,7 @@ class Context(discord.abc.Messageable):
             to_call = cmd.root_parent or cmd
             view.index = len(self.prefix)
             view.previous = 0
-            view.get_word() # advance to get the root command
+            view.get_word()  # advance to get the root command
         else:
             to_call = cmd
 
@@ -196,7 +201,10 @@ class Context(discord.abc.Messageable):
 
     @property
     def valid(self):
-        """:class:`bool`: Checks if the invocation context is valid to be invoked with."""
+        """
+        :class:`bool`: Checks if the invocation context is valid to be invoked with.
+        """
+
         return self.prefix is not None and self.command is not None
 
     async def _get_channel(self):
@@ -204,7 +212,9 @@ class Context(discord.abc.Messageable):
 
     @property
     def cog(self):
-        """:class:`.Cog`: Returns the cog associated with this context's command. None if it does not exist."""
+        """
+        :class:`.Cog`: Returns the cog associated with this context's command. None if it does not exist.
+        """
 
         if self.command is None:
             return None
@@ -212,38 +222,49 @@ class Context(discord.abc.Messageable):
 
     @discord.utils.cached_property
     def guild(self):
-        """Optional[:class:`.Guild`]: Returns the guild associated with this context's command. None if not available."""
+        """
+        Optional[:class:`.Guild`]: Returns the guild associated with this context's command. None if not available.
+        """
+
         return self.message.guild
 
     @discord.utils.cached_property
     def channel(self):
-        """:class:`.TextChannel`:
+        """
+        :class:`.TextChannel`:
         Returns the channel associated with this context's command. Shorthand for :attr:`.Message.channel`.
         """
+
         return self.message.channel
 
     @discord.utils.cached_property
     def author(self):
-        """Union[:class:`~discord.User`, :class:`.Member`]:
+        """
+        Union[:class:`~discord.User`, :class:`.Member`]:
         Returns the author associated with this context's command. Shorthand for :attr:`.Message.author`
         """
+
         return self.message.author
 
     @discord.utils.cached_property
     def me(self):
-        """Union[:class:`.Member`, :class:`.ClientUser`]:
+        """
+        Union[:class:`.Member`, :class:`.ClientUser`]:
         Similar to :attr:`.Guild.me` except it may return the :class:`.ClientUser` in private message contexts.
         """
+
         return self.guild.me if self.guild is not None else self.bot.user
 
     @property
     def voice_client(self):
         r"""Optional[:class:`.VoiceProtocol`]: A shortcut to :attr:`.Guild.voice_client`\, if applicable."""
+
         g = self.guild
         return g.voice_client if g else None
 
     async def send_help(self, *args):
-        """send_help(entity=<bot>)
+        """
+        send_help(entity=<bot>)
 
         |coro|
 
@@ -272,6 +293,7 @@ class Context(discord.abc.Messageable):
         Any
             The result of the help command, if any.
         """
+
         from .core import Group, Command, wrap_callback
         from .errors import CommandError
 

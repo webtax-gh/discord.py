@@ -40,14 +40,18 @@ from .file import File
 from .voice_client import VoiceClient, VoiceProtocol
 from . import utils
 
+
 class _Undefined:
     def __repr__(self):
         return 'see-below'
 
+
 _undefined = _Undefined()
 
+
 class Snowflake(metaclass=abc.ABCMeta):
-    """An ABC that details the common operations on a Discord model.
+    """
+    An ABC that details the common operations on a Discord model.
 
     Almost all :ref:`Discord models <discord_api_models>` meet this
     abstract base class.
@@ -60,12 +64,15 @@ class Snowflake(metaclass=abc.ABCMeta):
     id: :class:`int`
         The model's unique ID.
     """
+
     __slots__ = ()
 
     @property
     @abc.abstractmethod
     def created_at(self):
-        """:class:`datetime.datetime`: Returns the model's creation time as a naive datetime in UTC."""
+        """
+        :class:`datetime.datetime`: Returns the model's creation time as a naive datetime in UTC.
+        """
         raise NotImplementedError
 
     @classmethod
@@ -81,8 +88,10 @@ class Snowflake(metaclass=abc.ABCMeta):
             return True
         return NotImplemented
 
+
 class User(metaclass=abc.ABCMeta):
-    """An ABC that details the common operations on a Discord user.
+    """
+    An ABC that details the common operations on a Discord user.
 
     The following implement this ABC:
 
@@ -103,18 +112,23 @@ class User(metaclass=abc.ABCMeta):
     bot: :class:`bool`
         If the user is a bot account.
     """
+
     __slots__ = ()
 
     @property
     @abc.abstractmethod
     def display_name(self):
-        """:class:`str`: Returns the user's display name."""
+        """
+        :class:`str`: Returns the user's display name.
+        """
         raise NotImplementedError
 
     @property
     @abc.abstractmethod
     def mention(self):
-        """:class:`str`: Returns a string that allows you to mention the given user."""
+        """
+        :class:`str`: Returns a string that allows you to mention the given user.
+        """
         raise NotImplementedError
 
     @classmethod
@@ -133,8 +147,10 @@ class User(metaclass=abc.ABCMeta):
             return True
         return NotImplemented
 
+
 class PrivateChannel(metaclass=abc.ABCMeta):
-    """An ABC that details the common operations on a private Discord channel.
+    """
+    An ABC that details the common operations on a private Discord channel.
 
     The following implement this ABC:
 
@@ -148,6 +164,7 @@ class PrivateChannel(metaclass=abc.ABCMeta):
     me: :class:`~discord.ClientUser`
         The user presenting yourself.
     """
+
     __slots__ = ()
 
     @classmethod
@@ -162,6 +179,7 @@ class PrivateChannel(metaclass=abc.ABCMeta):
                     return True
             return NotImplemented
         return NotImplemented
+
 
 class _Overwrites:
     __slots__ = ('id', 'allow', 'deny', 'type')
@@ -180,8 +198,10 @@ class _Overwrites:
             'type': self.type,
         }
 
+
 class GuildChannel:
-    """An ABC that details the common operations on a Discord guild channel.
+    """
+    An ABC that details the common operations on a Discord guild channel.
 
     The following implement this ABC:
 
@@ -201,6 +221,7 @@ class GuildChannel:
         The position in the channel list. This is a number that starts at 0.
         e.g. the top channel is position 0.
     """
+
     __slots__ = ()
 
     def __str__(self):
@@ -336,8 +357,11 @@ class GuildChannel:
 
     @property
     def changed_roles(self):
-        """List[:class:`~discord.Role`]: Returns a list of roles that have been overridden from
-        their default values in the :attr:`~discord.Guild.roles` attribute."""
+        """
+        List[:class:`~discord.Role`]: Returns a list of roles that have been overridden from
+        their default values in the :attr:`~discord.Guild.roles` attribute.
+        """
+
         ret = []
         g = self.guild
         for overwrite in filter(lambda o: o.type == 'role', self._overwrites):
@@ -352,16 +376,23 @@ class GuildChannel:
 
     @property
     def mention(self):
-        """:class:`str`: The string that allows you to mention the channel."""
+        """
+        :class:`str`: The string that allows you to mention the channel.
+        """
+
         return '<#%s>' % self.id
 
     @property
     def created_at(self):
-        """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
+        """
+        :class:`datetime.datetime`: Returns the channel's creation time in UTC.
+        """
+
         return utils.snowflake_time(self.id)
 
     def overwrites_for(self, obj):
-        """Returns the channel-specific overwrites for a member or a role.
+        """
+        Returns the channel-specific overwrites for a member or a role.
 
         Parameters
         -----------
@@ -392,7 +423,8 @@ class GuildChannel:
 
     @property
     def overwrites(self):
-        """Returns all of the channel's overwrites.
+        """
+        Returns all of the channel's overwrites.
 
         This is returned as a dictionary where the key contains the target which
         can be either a :class:`~discord.Role` or a :class:`~discord.Member` and the value is the
@@ -403,6 +435,7 @@ class GuildChannel:
         Mapping[Union[:class:`~discord.Role`, :class:`~discord.Member`], :class:`~discord.PermissionOverwrite`]
             The channel's permission overwrites.
         """
+
         ret = {}
         for ow in self._overwrites:
             allow = Permissions(ow.allow)
@@ -425,26 +458,31 @@ class GuildChannel:
 
     @property
     def category(self):
-        """Optional[:class:`~discord.CategoryChannel`]: The category this channel belongs to.
+        """
+        Optional[:class:`~discord.CategoryChannel`]: The category this channel belongs to.
 
         If there is no category then this is ``None``.
         """
+
         return self.guild.get_channel(self.category_id)
 
     @property
     def permissions_synced(self):
-        """:class:`bool`: Whether or not the permissions for this channel are synced with the
+        """
+        :class:`bool`: Whether or not the permissions for this channel are synced with the
         category it belongs to.
 
         If there is no category then this is ``False``.
 
         .. versionadded:: 1.3
         """
+
         category = self.guild.get_channel(self.category_id)
         return bool(category and category.overwrites == self.overwrites)
 
     def permissions_for(self, member):
-        """Handles permission resolution for the current :class:`~discord.Member`.
+        """
+        Handles permission resolution for the current :class:`~discord.Member`.
 
         This function takes into consideration the following cases:
 
@@ -541,7 +579,8 @@ class GuildChannel:
         return base
 
     async def delete(self, *, reason=None):
-        """|coro|
+        """
+        |coro|
 
         Deletes the channel.
 
@@ -562,10 +601,12 @@ class GuildChannel:
         ~discord.HTTPException
             Deleting the channel failed.
         """
+
         await self._state.http.delete_channel(self.id, reason=reason)
 
     async def set_permissions(self, target, *, overwrite=_undefined, reason=None, **permissions):
-        r"""|coro|
+        r"""
+        |coro|
 
         Sets the channel specific permission overwrites for a target in the
         channel.
@@ -675,7 +716,8 @@ class GuildChannel:
         return obj
 
     async def clone(self, *, name=None, reason=None):
-        """|coro|
+        """
+        |coro|
 
         Clones this channel. This creates a channel with the same properties
         as this channel.
@@ -705,10 +747,12 @@ class GuildChannel:
         :class:`.abc.GuildChannel`
             The channel that was created.
         """
+
         raise NotImplementedError
 
     async def create_invite(self, *, reason=None, **fields):
-        """|coro|
+        """
+        |coro|
 
         Creates an instant invite.
 
@@ -748,7 +792,8 @@ class GuildChannel:
         return Invite.from_incomplete(data=data, state=self._state)
 
     async def invites(self):
-        """|coro|
+        """
+        |coro|
 
         Returns a list of all active instant invites from this channel.
 
@@ -778,8 +823,10 @@ class GuildChannel:
 
         return result
 
+
 class Messageable(metaclass=abc.ABCMeta):
-    """An ABC that details the common operations on a model that can send messages.
+    """
+    An ABC that details the common operations on a model that can send messages.
 
     The following implement this ABC:
 
@@ -797,10 +844,11 @@ class Messageable(metaclass=abc.ABCMeta):
     async def _get_channel(self):
         raise NotImplementedError
 
-    async def send(self, content=None, *, tts=False, embed=None, file=None,
-                                          files=None, delete_after=None, nonce=None,
-                                          allowed_mentions=None):
-        """|coro|
+    async def send(
+            self, content=None, *, tts=False, embed=None, file=None,
+            files=None, delete_after=None, nonce=None, allowed_mentions=None):
+        """
+        |coro|
 
         Sends a message to the destination with the content given.
 
@@ -883,8 +931,9 @@ class Messageable(metaclass=abc.ABCMeta):
                 raise InvalidArgument('file parameter must be File')
 
             try:
-                data = await state.http.send_files(channel.id, files=[file], allowed_mentions=allowed_mentions,
-                                                   content=content, tts=tts, embed=embed, nonce=nonce)
+                data = await state.http.send_files(
+                    channel.id, files=[file], allowed_mentions=allowed_mentions, content=content, tts=tts, embed=embed, nonce=nonce
+                )
             finally:
                 file.close()
 
@@ -895,14 +944,16 @@ class Messageable(metaclass=abc.ABCMeta):
                 raise InvalidArgument('files parameter must be a list of File')
 
             try:
-                data = await state.http.send_files(channel.id, files=files, content=content, tts=tts,
-                                                   embed=embed, nonce=nonce, allowed_mentions=allowed_mentions)
+                data = await state.http.send_files(
+                    channel.id, files=files, content=content, tts=tts, embed=embed, nonce=nonce, allowed_mentions=allowed_mentions
+                )
             finally:
                 for f in files:
                     f.close()
         else:
-            data = await state.http.send_message(channel.id, content, tts=tts, embed=embed,
-                                                                      nonce=nonce, allowed_mentions=allowed_mentions)
+            data = await state.http.send_message(
+                channel.id, content, tts=tts, embed=embed, nonce=nonce, allowed_mentions=allowed_mentions
+            )
 
         ret = state.create_message(channel=channel, data=data)
         if delete_after is not None:
@@ -910,7 +961,8 @@ class Messageable(metaclass=abc.ABCMeta):
         return ret
 
     async def trigger_typing(self):
-        """|coro|
+        """
+        |coro|
 
         Triggers a *typing* indicator to the destination.
 
@@ -921,7 +973,8 @@ class Messageable(metaclass=abc.ABCMeta):
         await self._state.http.send_typing(channel.id)
 
     def typing(self):
-        """Returns a context manager that allows you to type for an indefinite period of time.
+        """
+        Returns a context manager that allows you to type for an indefinite period of time.
 
         This is useful for denoting long computations in your bot.
 
@@ -937,10 +990,12 @@ class Messageable(metaclass=abc.ABCMeta):
                 await channel.send('done!')
 
         """
+
         return Typing(self)
 
     async def fetch_message(self, id):
-        """|coro|
+        """
+        |coro|
 
         Retrieves a single :class:`~discord.Message` from the destination.
 
@@ -971,7 +1026,8 @@ class Messageable(metaclass=abc.ABCMeta):
         return self._state.create_message(channel=channel, data=data)
 
     async def pins(self):
-        """|coro|
+        """
+        |coro|
 
         Retrieves all messages that are currently pinned in the channel.
 
@@ -998,7 +1054,8 @@ class Messageable(metaclass=abc.ABCMeta):
         return [state.create_message(channel=channel, data=m) for m in data]
 
     def history(self, *, limit=100, before=None, after=None, around=None, oldest_first=None):
-        """Returns an :class:`~discord.AsyncIterator` that enables receiving the destination's message history.
+        """
+        Returns an :class:`~discord.AsyncIterator` that enables receiving the destination's message history.
 
         You must have :attr:`~Permissions.read_message_history` permissions to use this.
 
@@ -1052,16 +1109,20 @@ class Messageable(metaclass=abc.ABCMeta):
         :class:`~discord.Message`
             The message with the message data parsed.
         """
+
         return HistoryIterator(self, limit=limit, before=before, after=after, around=around, oldest_first=oldest_first)
 
+
 class Connectable(metaclass=abc.ABCMeta):
-    """An ABC that details the common operations on a channel that can
+    """
+    An ABC that details the common operations on a channel that can
     connect to a voice server.
 
     The following implement this ABC:
 
     - :class:`~discord.VoiceChannel`
     """
+
     __slots__ = ()
 
     @abc.abstractmethod
@@ -1073,7 +1134,8 @@ class Connectable(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     async def connect(self, *, timeout=60.0, reconnect=True, cls=VoiceClient):
-        """|coro|
+        """
+        |coro|
 
         Connects to voice and creates a :class:`VoiceClient` to establish
         your connection to the voice server.
@@ -1126,6 +1188,6 @@ class Connectable(metaclass=abc.ABCMeta):
             except Exception:
                 # we don't care if disconnect failed because connection failed
                 pass
-            raise # re-raise
+            raise  # re-raise
 
         return voice

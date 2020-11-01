@@ -37,11 +37,14 @@ from discord.backoff import ExponentialBackoff
 
 log = logging.getLogger(__name__)
 
+
 class Loop:
-    """A background task helper that abstracts the loop and reconnection logic for you.
+    """
+    A background task helper that abstracts the loop and reconnection logic for you.
 
     The main interface to create this is through :func:`loop`.
     """
+
     def __init__(self, coro, seconds, hours, minutes, count, reconnect, loop):
         self.coro = coro
         self.reconnect = reconnect
@@ -92,7 +95,7 @@ class Loop:
         self._last_iteration_failed = False
         self._next_iteration = datetime.datetime.now(datetime.timezone.utc)
         try:
-            await asyncio.sleep(0) # allows canceling in before_loop
+            await asyncio.sleep(0)  # allows canceling in before_loop
             while True:
                 if not self._last_iteration_failed:
                     self._last_iteration = self._next_iteration
@@ -135,7 +138,7 @@ class Loop:
             return self
 
         copy = Loop(self.coro, seconds=self.seconds, hours=self.hours, minutes=self.minutes,
-                               count=self.count, reconnect=self.reconnect, loop=self.loop)
+                    count=self.count, reconnect=self.reconnect, loop=self.loop)
         copy._injected = obj
         copy._before_loop = self._before_loop
         copy._after_loop = self._after_loop
@@ -145,15 +148,20 @@ class Loop:
 
     @property
     def current_loop(self):
-        """:class:`int`: The current iteration of the loop."""
+        """
+        :class:`int`: The current iteration of the loop.
+        """
+
         return self._current_loop
 
     @property
     def next_iteration(self):
-        """Optional[:class:`datetime.datetime`]: When the next iteration of the loop will occur.
+        """
+        Optional[:class:`datetime.datetime`]: When the next iteration of the loop will occur.
 
         .. versionadded:: 1.3
         """
+
         if self._task is None and self._sleep:
             return None
         elif self._task and self._task.done() or self._stop_next_iteration:
@@ -161,7 +169,8 @@ class Loop:
         return self._next_iteration
 
     def start(self, *args, **kwargs):
-        r"""Starts the internal task in the event loop.
+        r"""
+        Starts the internal task in the event loop.
 
         Parameters
         ------------
@@ -194,7 +203,8 @@ class Loop:
         return self._task
 
     def stop(self):
-        r"""Gracefully stops the task from running.
+        r"""
+        Gracefully stops the task from running.
 
         Unlike :meth:`cancel`\, this allows the task to finish its
         current iteration before gracefully exiting.
@@ -211,6 +221,7 @@ class Loop:
 
         .. versionadded:: 1.2
         """
+
         if self._task and not self._task.done():
             self._stop_next_iteration = True
 
@@ -218,12 +229,16 @@ class Loop:
         return not self._is_being_cancelled and self._task and not self._task.done()
 
     def cancel(self):
-        """Cancels the internal task, if it is running."""
+        """
+        Cancels the internal task, if it is running.
+        """
+
         if self._can_be_cancelled():
             self._task.cancel()
 
     def restart(self, *args, **kwargs):
-        r"""A convenience method to restart the internal task.
+        r"""
+        A convenience method to restart the internal task.
 
         .. note::
 
@@ -247,7 +262,8 @@ class Loop:
             self._task.cancel()
 
     def add_exception_type(self, *exceptions):
-        r"""Adds exception types to be handled during the reconnect logic.
+        r"""
+        Adds exception types to be handled during the reconnect logic.
 
         By default the exception types handled are those handled by
         :meth:`discord.Client.connect`\, which includes a lot of internet disconnection
@@ -276,16 +292,19 @@ class Loop:
         self._valid_exception = (*self._valid_exception, *exceptions)
 
     def clear_exception_types(self):
-        """Removes all exception types that are handled.
+        """
+        Removes all exception types that are handled.
 
         .. note::
 
             This operation obviously cannot be undone!
         """
+
         self._valid_exception = tuple()
 
     def remove_exception_type(self, *exceptions):
-        r"""Removes exception types from being handled during the reconnect logic.
+        r"""
+        Removes exception types from being handled during the reconnect logic.
 
         Parameters
         ------------
@@ -297,30 +316,41 @@ class Loop:
         :class:`bool`
             Whether all exceptions were successfully removed.
         """
+
         old_length = len(self._valid_exception)
         self._valid_exception = tuple(x for x in self._valid_exception if x not in exceptions)
         return len(self._valid_exception) == old_length - len(exceptions)
 
     def get_task(self):
-        """Optional[:class:`asyncio.Task`]: Fetches the internal task or ``None`` if there isn't one running."""
+        """
+        Optional[:class:`asyncio.Task`]: Fetches the internal task or ``None`` if there isn't one running.
+        """
+
         return self._task
 
     def is_being_cancelled(self):
-        """Whether the task is being cancelled."""
+        """
+        Whether the task is being cancelled.
+        """
+
         return self._is_being_cancelled
 
     def failed(self):
-        """:class:`bool`: Whether the internal task has failed.
+        """
+        :class:`bool`: Whether the internal task has failed.
 
         .. versionadded:: 1.2
         """
+
         return self._has_failed
 
     def is_running(self):
-        """:class:`bool`: Check if the task is currently running.
+        """
+        :class:`bool`: Check if the task is currently running.
 
         .. versionadded:: 1.4
         """
+
         return not bool(self._task.done()) if self._task else False
 
     async def _error(self, *args):
@@ -329,7 +359,8 @@ class Loop:
         traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
 
     def before_loop(self, coro):
-        """A decorator that registers a coroutine to be called before the loop starts running.
+        """
+        A decorator that registers a coroutine to be called before the loop starts running.
 
         This is useful if you want to wait for some bot state before the loop starts,
         such as :meth:`discord.Client.wait_until_ready`.
@@ -354,7 +385,8 @@ class Loop:
         return coro
 
     def after_loop(self, coro):
-        """A decorator that register a coroutine to be called after the loop finished running.
+        """
+        A decorator that register a coroutine to be called after the loop finished running.
 
         The coroutine must take no arguments (except ``self`` in a class context).
 
@@ -382,7 +414,8 @@ class Loop:
         return coro
 
     def error(self, coro):
-        """A decorator that registers a coroutine to be called if the task encounters an unhandled exception.
+        """
+        A decorator that registers a coroutine to be called if the task encounters an unhandled exception.
 
         The coroutine must take only one argument the exception raised (except ``self`` in a class context).
 
@@ -401,6 +434,7 @@ class Loop:
         TypeError
             The function was not a coroutine.
         """
+
         if not inspect.iscoroutinefunction(coro):
             raise TypeError('Expected coroutine function, received {0.__name__!r}.'.format(type(coro)))
 
@@ -411,7 +445,8 @@ class Loop:
         return self._last_iteration + datetime.timedelta(seconds=self._sleep)
 
     def change_interval(self, *, seconds=0, minutes=0, hours=0):
-        """Changes the interval for the sleep time.
+        """
+        Changes the interval for the sleep time.
 
         .. note::
 
@@ -444,8 +479,10 @@ class Loop:
         self.hours = hours
         self.minutes = minutes
 
+
 def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None):
-    """A decorator that schedules a task in the background for you with
+    """
+    A decorator that schedules a task in the background for you with
     optional reconnect logic. The decorator returns a :class:`Loop`.
 
     Parameters
@@ -474,6 +511,7 @@ def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None
     TypeError
         The function was not a coroutine.
     """
+
     def decorator(func):
         kwargs = {
             'seconds': seconds,

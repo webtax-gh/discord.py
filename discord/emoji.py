@@ -29,8 +29,10 @@ from . import utils
 from .partial_emoji import _EmojiTag
 from .user import User
 
+
 class Emoji(_EmojiTag):
-    """Represents a custom emoji.
+    """
+    Represents a custom emoji.
 
     Depending on the way this object was created, some of the attributes can
     have a value of ``None``.
@@ -78,6 +80,7 @@ class Emoji(_EmojiTag):
         The user that created the emoji. This can only be retrieved using :meth:`Guild.fetch_emoji` and
         having the :attr:`~Permissions.manage_emojis` permission.
     """
+
     __slots__ = ('require_colons', 'animated', 'managed', 'id', 'name', '_roles', 'guild_id',
                  '_state', 'user', 'available')
 
@@ -126,22 +129,30 @@ class Emoji(_EmojiTag):
 
     @property
     def created_at(self):
-        """:class:`datetime.datetime`: Returns the emoji's creation time in UTC."""
+        """
+        :class:`datetime.datetime`: Returns the emoji's creation time in UTC.
+        """
+
         return utils.snowflake_time(self.id)
 
     @property
     def url(self):
-        """:class:`Asset`: Returns the asset of the emoji."""
+        """
+        :class:`Asset`: Returns the asset of the emoji.
+        """
+
         _format = 'gif' if self.animated else 'png'
         url = "/emojis/{0.id}.{1}".format(self, _format)
         return Asset(self._state, url)
 
     @property
     def roles(self):
-        """List[:class:`Role`]: A :class:`list` of roles that is allowed to use this emoji.
+        """
+        List[:class:`Role`]: A :class:`list` of roles that is allowed to use this emoji.
 
         If roles is empty, the emoji is unrestricted.
         """
+
         guild = self.guild
         if guild is None:
             return []
@@ -150,14 +161,19 @@ class Emoji(_EmojiTag):
 
     @property
     def guild(self):
-        """:class:`Guild`: The guild this emoji belongs to."""
+        """
+        :class:`Guild`: The guild this emoji belongs to.
+        """
+
         return self._state._get_guild(self.guild_id)
 
     def is_usable(self):
-        """:class:`bool`: Whether the bot can use this emoji.
+        """
+        :class:`bool`: Whether the bot can use this emoji.
 
         .. versionadded:: 1.3
         """
+
         if not self.available:
             return False
         if not self._roles:
@@ -166,7 +182,8 @@ class Emoji(_EmojiTag):
         return any(my_roles.has(role_id) for role_id in emoji_roles)
 
     async def delete(self, *, reason=None):
-        """|coro|
+        """
+        |coro|
 
         Deletes the custom emoji.
 
@@ -189,7 +206,8 @@ class Emoji(_EmojiTag):
         await self._state.http.delete_custom_emoji(self.guild.id, self.id, reason=reason)
 
     async def edit(self, *, name=None, roles=None, reason=None):
-        r"""|coro|
+        r"""
+        |coro|
 
         Edits the custom emoji.
 

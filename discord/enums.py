@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import types
 from collections import namedtuple
 
+
 __all__ = (
     'Enum',
     'ChannelType',
@@ -54,16 +55,20 @@ __all__ = (
     'ExpireBehavior',
 )
 
+
 def _create_value_cls(name):
     cls = namedtuple('_EnumValue_' + name, 'name value')
     cls.__repr__ = lambda self: '<%s.%s: %r>' % (name, self.name, self.value)
     cls.__str__ = lambda self: '%s.%s' % (name, self.name)
     return cls
 
+
 def _is_descriptor(obj):
     return hasattr(obj, '__get__') or hasattr(obj, '__set__') or hasattr(obj, '__delete__')
 
+
 class EnumMeta(type):
+
     def __new__(cls, name, bases, attrs):
         value_mapping = {}
         member_mapping = {}
@@ -140,7 +145,9 @@ class EnumMeta(type):
         except AttributeError:
             return False
 
+
 class Enum(metaclass=EnumMeta):
+
     @classmethod
     def try_value(cls, value):
         try:
@@ -150,6 +157,7 @@ class Enum(metaclass=EnumMeta):
 
 
 class ChannelType(Enum):
+
     text     = 0
     private  = 1
     voice    = 2
@@ -161,7 +169,9 @@ class ChannelType(Enum):
     def __str__(self):
         return self.name
 
+
 class MessageType(Enum):
+
     default                    = 0
     recipient_add              = 1
     recipient_remove           = 2
@@ -176,7 +186,9 @@ class MessageType(Enum):
     premium_guild_tier_3       = 11
     channel_follow_add         = 12
 
+
 class VoiceRegion(Enum):
+
     us_west       = 'us-west'
     us_east       = 'us-east'
     us_south      = 'us-south'
@@ -204,7 +216,9 @@ class VoiceRegion(Enum):
     def __str__(self):
         return self.value
 
+
 class SpeakingState(Enum):
+
     none       = 0
     voice      = 1
     soundshare = 2
@@ -216,7 +230,9 @@ class SpeakingState(Enum):
     def __int__(self):
         return self.value
 
+
 class VerificationLevel(Enum):
+
     none              = 0
     low               = 1
     medium            = 2
@@ -229,7 +245,9 @@ class VerificationLevel(Enum):
     def __str__(self):
         return self.name
 
+
 class ContentFilter(Enum):
+
     disabled    = 0
     no_role     = 1
     all_members = 2
@@ -237,23 +255,31 @@ class ContentFilter(Enum):
     def __str__(self):
         return self.name
 
+
 class UserContentFilter(Enum):
+
     disabled    = 0
     friends     = 1
     all_messages = 2
 
+
 class FriendFlags(Enum):
+
     noone = 0
     mutual_guilds = 1
     mutual_friends = 2
     guild_and_friends = 3
     everyone = 4
 
+
 class Theme(Enum):
+
     light = 'light'
     dark = 'dark'
 
+
 class Status(Enum):
+
     online = 'online'
     offline = 'offline'
     idle = 'idle'
@@ -264,7 +290,9 @@ class Status(Enum):
     def __str__(self):
         return self.value
 
+
 class DefaultAvatar(Enum):
+
     blurple = 0
     grey    = 1
     gray    = 1
@@ -275,22 +303,30 @@ class DefaultAvatar(Enum):
     def __str__(self):
         return self.name
 
+
 class RelationshipType(Enum):
+
     friend           = 1
     blocked          = 2
     incoming_request = 3
     outgoing_request = 4
 
+
 class NotificationLevel(Enum):
+
     all_messages  = 0
     only_mentions = 1
 
+
 class AuditLogActionCategory(Enum):
+
     create = 1
     delete = 2
     update = 3
 
+
 class AuditLogAction(Enum):
+
     guild_update             = 1
     channel_create           = 10
     channel_update           = 11
@@ -392,6 +428,7 @@ class AuditLogAction(Enum):
         elif v < 90:
             return 'integration'
 
+
 class UserFlags(Enum):
     staff = 1
     partner = 2
@@ -410,6 +447,7 @@ class UserFlags(Enum):
     verified_bot = 65536
     verified_bot_developer = 131072
 
+
 class ActivityType(Enum):
     unknown = -1
     playing = 0
@@ -422,28 +460,35 @@ class ActivityType(Enum):
     def __int__(self):
         return self.value
 
+
 class HypeSquadHouse(Enum):
     bravery = 1
     brilliance = 2
     balance = 3
 
+
 class PremiumType(Enum):
     nitro_classic = 1
     nitro = 2
+
 
 class TeamMembershipState(Enum):
     invited = 1
     accepted = 2
 
+
 class WebhookType(Enum):
     incoming = 1
     channel_follower = 2
+
 
 class ExpireBehaviour(Enum):
     remove_role = 0
     kick = 1
 
+
 ExpireBehavior = ExpireBehaviour
+
 
 def try_enum(cls, val):
     """A function that tries to turn the value into enum ``cls``.

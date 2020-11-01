@@ -30,8 +30,10 @@ from . import utils
 from .enums import VoiceRegion, try_enum
 from .member import VoiceState
 
+
 class CallMessage:
-    """Represents a group call message from Discord.
+    """
+    Represents a group call message from Discord.
 
     This is only received in cases where the message type is equivalent to
     :attr:`MessageType.call`.
@@ -53,17 +55,21 @@ class CallMessage:
 
     @property
     def call_ended(self):
-        """:class:`bool`: Indicates if the call has ended."""
+        """
+        :class:`bool`: Indicates if the call has ended.
+        """
         return self.ended_timestamp is not None
 
     @property
     def channel(self):
         r""":class:`GroupChannel`\: The private channel associated with this message."""
+
         return self.message.channel
 
     @property
     def duration(self):
-        """Queries the duration of the call.
+        """
+        Queries the duration of the call.
 
         If the call has not ended then the current duration will
         be returned.
@@ -73,13 +79,16 @@ class CallMessage:
         :class:`datetime.timedelta`
             The timedelta object representing the duration.
         """
+
         if self.ended_timestamp is None:
             return datetime.datetime.utcnow() - self.message.created_at
         else:
             return self.ended_timestamp - self.message.created_at
 
+
 class GroupCall:
-    """Represents the actual group call from Discord.
+    """
+    Represents the actual group call from Discord.
 
     This is accompanied with a :class:`CallMessage` denoting the information.
 
@@ -122,7 +131,10 @@ class GroupCall:
 
     @property
     def connected(self):
-        """List[:class:`User`]: A property that returns all users that are currently in this call."""
+        """
+        List[:class:`User`]: A property that returns all users that are currently in this call.
+        """
+
         ret = [u for u in self.channel.recipients if self.voice_state_for(u) is not None]
         me = self.channel.me
         if self.voice_state_for(me) is not None:
@@ -133,6 +145,7 @@ class GroupCall:
     @property
     def channel(self):
         r""":class:`GroupChannel`\: Returns the channel the group call is in."""
+
         return self.call.channel
 
     def voice_state_for(self, user):

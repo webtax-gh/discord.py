@@ -56,7 +56,9 @@ from .webhook import Webhook
 from .iterators import GuildIterator
 from .appinfo import AppInfo
 
+
 log = logging.getLogger(__name__)
+
 
 def _cancel_tasks(loop):
     try:
@@ -87,6 +89,7 @@ def _cancel_tasks(loop):
                 'task': task
             })
 
+
 def _cleanup_loop(loop):
     try:
         _cancel_tasks(loop)
@@ -95,6 +98,7 @@ def _cleanup_loop(loop):
     finally:
         log.info('Closing the event loop.')
         loop.close()
+
 
 class _ClientEventTask(asyncio.Task):
     def __init__(self, original_coro, event_name, coro, *, loop):
@@ -112,8 +116,10 @@ class _ClientEventTask(asyncio.Task):
             info.append(('exception', repr(self._exception)))
         return '<ClientEventTask {}>'.format(' '.join('%s=%s' % t for t in info))
 
+
 class Client:
-    r"""Represents a client connection that connects to Discord.
+    r"""
+    Represents a client connection that connects to Discord.
     This class is used to interact with the Discord WebSocket and API.
 
     A number of options can be passed to the :class:`Client`.
@@ -226,6 +232,7 @@ class Client:
     loop: :class:`asyncio.AbstractEventLoop`
         The event loop that the client uses for HTTP requests and websocket operations.
     """
+
     def __init__(self, *, loop=None, **options):
         self.ws = None
         self.loop = asyncio.get_event_loop() if loop is None else loop
@@ -275,57 +282,77 @@ class Client:
 
     @property
     def latency(self):
-        """:class:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
+        """
+        :class:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
 
         This could be referred to as the Discord WebSocket protocol latency.
         """
+
         ws = self.ws
         return float('nan') if not ws else ws.latency
 
     @property
     def user(self):
-        """Optional[:class:`.ClientUser`]: Represents the connected client. ``None`` if not logged in."""
+        """
+        Optional[:class:`.ClientUser`]: Represents the connected client. ``None`` if not logged in.
+        """
+
         return self._connection.user
 
     @property
     def guilds(self):
-        """List[:class:`.Guild`]: The guilds that the connected client is a member of."""
+        """
+        List[:class:`.Guild`]: The guilds that the connected client is a member of.
+        """
+
         return self._connection.guilds
 
     @property
     def emojis(self):
-        """List[:class:`.Emoji`]: The emojis that the connected client has."""
+        """
+        List[:class:`.Emoji`]: The emojis that the connected client has.
+        """
+
         return self._connection.emojis
 
     @property
     def cached_messages(self):
-        """Sequence[:class:`.Message`]: Read-only list of messages the connected client has cached.
+        """
+        Sequence[:class:`.Message`]: Read-only list of messages the connected client has cached.
 
         .. versionadded:: 1.1
         """
+
         return utils.SequenceProxy(self._connection._messages or [])
 
     @property
     def private_channels(self):
-        """List[:class:`.abc.PrivateChannel`]: The private channels that the connected client is participating on.
+        """
+        List[:class:`.abc.PrivateChannel`]: The private channels that the connected client is participating on.
 
         .. note::
 
             This returns only up to 128 most recent private channels due to an internal working
             on how Discord deals with private channels.
         """
+
         return self._connection.private_channels
 
     @property
     def voice_clients(self):
-        """List[:class:`.VoiceProtocol`]: Represents a list of voice connections.
+        """
+        List[:class:`.VoiceProtocol`]: Represents a list of voice connections.
 
         These are usually :class:`.VoiceClient` instances.
         """
+
         return self._connection.voice_clients
 
     def is_ready(self):
-        """:class:`bool`: Specifies if the client's internal cache is ready for use."""
+        """
+        :class:`bool`: Specifies if the client's internal cache is ready for use.
+        """
+
         return self._ready.is_set()
 
     async def _run_event(self, coro, event_name, *args, **kwargs):
@@ -385,7 +412,8 @@ class Client:
             self._schedule_event(coro, method, *args, **kwargs)
 
     async def on_error(self, event_method, *args, **kwargs):
-        """|coro|
+        """
+        |coro|
 
         The default error handler provided by the client.
 
@@ -393,12 +421,14 @@ class Client:
         overridden to have a different implementation.
         Check :func:`~discord.on_error` for more details.
         """
+
         print('Ignoring exception in {}'.format(event_method), file=sys.stderr)
         traceback.print_exc()
 
     @utils.deprecated('Guild.chunk')
     async def request_offline_members(self, *guilds):
-        r"""|coro|
+        r"""
+        |coro|
 
         Requests previously offline members from the guild to be filled up
         into the :attr:`.Guild.members` cache. This function is usually not
@@ -424,6 +454,7 @@ class Client:
         :exc:`.InvalidArgument`
             If any guild is unavailable in the collection.
         """
+
         if any(g.unavailable for g in guilds):
             raise InvalidArgument('An unavailable guild was passed.')
 
@@ -439,7 +470,8 @@ class Client:
         await self.before_identify_hook(shard_id, initial=initial)
 
     async def before_identify_hook(self, shard_id, *, initial=False):
-        """|coro|
+        """
+        |coro|
 
         A hook that is called before IDENTIFYing a session. This is useful
         if you wish to have more control over the synchronization of multiple
@@ -463,7 +495,8 @@ class Client:
     # login state management
 
     async def login(self, token, *, bot=True):
-        """|coro|
+        """
+        |coro|
 
         Logs in the client with the specified credentials.
 
@@ -500,7 +533,8 @@ class Client:
         self._connection.is_bot = bot
 
     async def logout(self):
-        """|coro|
+        """
+        |coro|
 
         Logs out of Discord and closes all connections.
 
@@ -510,10 +544,12 @@ class Client:
             to do extraneous cleanup when subclassing, it is suggested
             to override :meth:`close` instead.
         """
+
         await self.close()
 
     async def connect(self, *, reconnect=True):
-        """|coro|
+        """
+        |coro|
 
         Creates a websocket connection and lets the websocket listen
         to messages from Discord. This is a loop that runs the entire
@@ -597,10 +633,12 @@ class Client:
                 ws_params.update(sequence=self.ws.sequence, resume=True, session=self.ws.session_id)
 
     async def close(self):
-        """|coro|
+        """
+        |coro|
 
         Closes the connection to Discord.
         """
+
         if self._closed:
             return
 
@@ -620,19 +658,22 @@ class Client:
         self._ready.clear()
 
     def clear(self):
-        """Clears the internal state of the bot.
+        """
+        Clears the internal state of the bot.
 
         After this, the bot can be considered "re-opened", i.e. :meth:`is_closed`
         and :meth:`is_ready` both return ``False`` along with the bot's internal
         cache cleared.
         """
+
         self._closed = False
         self._ready.clear()
         self._connection.clear()
         self.http.recreate()
 
     async def start(self, *args, **kwargs):
-        """|coro|
+        """
+        |coro|
 
         A shorthand coroutine for :meth:`login` + :meth:`connect`.
 
@@ -641,6 +682,7 @@ class Client:
         TypeError
             An unexpected keyword argument was received.
         """
+
         bot = kwargs.pop('bot', True)
         reconnect = kwargs.pop('reconnect', True)
 
@@ -651,7 +693,8 @@ class Client:
         await self.connect(reconnect=reconnect)
 
     def run(self, *args, **kwargs):
-        """A blocking call that abstracts away the event loop
+        """
+        A blocking call that abstracts away the event loop
         initialisation from you.
 
         If you want more control over the event loop then this
@@ -674,6 +717,7 @@ class Client:
             is blocking. That means that registration of events or anything being
             called after this function call will not execute until it returns.
         """
+
         loop = self.loop
 
         try:
@@ -713,14 +757,18 @@ class Client:
     # properties
 
     def is_closed(self):
-        """:class:`bool`: Indicates if the websocket connection is closed."""
+        """
+        :class:`bool`: Indicates if the websocket connection is closed.
+        """
+
         return self._closed
 
     @property
     def activity(self):
-        """Optional[:class:`.BaseActivity`]: The activity being used upon
-        logging in.
         """
+        Optional[:class:`.BaseActivity`]: The activity being used upon logging in.
+        """
+
         return create_activity(self._connection._activity)
 
     @activity.setter
@@ -734,10 +782,12 @@ class Client:
 
     @property
     def allowed_mentions(self):
-        """Optional[:class:`~discord.AllowedMentions`]: The allowed mention configuration.
+        """
+        Optional[:class:`~discord.AllowedMentions`]: The allowed mention configuration.
 
         .. versionadded:: 1.4
         """
+
         return self._connection.allowed_mentions
 
     @allowed_mentions.setter
@@ -751,21 +801,27 @@ class Client:
 
     @property
     def intents(self):
-        """:class:`Intents`: The intents configured for this connection.
+        """
+        :class:`Intents`: The intents configured for this connection.
 
         .. versionadded:: 1.5
         """
+
         return self._connection.intents
 
     # helpers/getters
 
     @property
     def users(self):
-        """List[:class:`~discord.User`]: Returns a list of all the users the bot can see."""
+        """
+        List[:class:`~discord.User`]: Returns a list of all the users the bot can see.
+        """
+
         return list(self._connection._users.values())
 
     def get_channel(self, id):
-        """Returns a channel with the given ID.
+        """
+        Returns a channel with the given ID.
 
         Parameters
         -----------
@@ -777,10 +833,12 @@ class Client:
         Optional[Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`]]
             The returned channel or ``None`` if not found.
         """
+
         return self._connection.get_channel(id)
 
     def get_guild(self, id):
-        """Returns a guild with the given ID.
+        """
+        Returns a guild with the given ID.
 
         Parameters
         -----------
@@ -792,10 +850,12 @@ class Client:
         Optional[:class:`.Guild`]
             The guild or ``None`` if not found.
         """
+
         return self._connection._get_guild(id)
 
     def get_user(self, id):
-        """Returns a user with the given ID.
+        """
+        Returns a user with the given ID.
 
         Parameters
         -----------
@@ -807,10 +867,12 @@ class Client:
         Optional[:class:`~discord.User`]
             The user or ``None`` if not found.
         """
+
         return self._connection.get_user(id)
 
     def get_emoji(self, id):
-        """Returns an emoji with the given ID.
+        """
+        Returns an emoji with the given ID.
 
         Parameters
         -----------
@@ -822,10 +884,12 @@ class Client:
         Optional[:class:`.Emoji`]
             The custom emoji or ``None`` if not found.
         """
+
         return self._connection.get_emoji(id)
 
     def get_all_channels(self):
-        """A generator that retrieves every :class:`.abc.GuildChannel` the client can 'access'.
+        """
+        A generator that retrieves every :class:`.abc.GuildChannel` the client can 'access'.
 
         This is equivalent to: ::
 
@@ -850,7 +914,8 @@ class Client:
                 yield channel
 
     def get_all_members(self):
-        """Returns a generator with every :class:`.Member` the client can see.
+        """
+        Returns a generator with every :class:`.Member` the client can see.
 
         This is equivalent to: ::
 
@@ -863,6 +928,7 @@ class Client:
         :class:`.Member`
             A member the client can see.
         """
+
         for guild in self.guilds:
             for member in guild.members:
                 yield member
@@ -870,14 +936,17 @@ class Client:
     # listeners/waiters
 
     async def wait_until_ready(self):
-        """|coro|
+        """
+        |coro|
 
         Waits until the client's internal cache is all ready.
         """
+
         await self._ready.wait()
 
     def wait_for(self, event, *, check=None, timeout=None):
-        """|coro|
+        """
+        |coro|
 
         Waits for a WebSocket event to be dispatched.
 
@@ -977,7 +1046,8 @@ class Client:
     # event registration
 
     def event(self, coro):
-        """A decorator that registers an event to listen to.
+        """
+        A decorator that registers an event to listen to.
 
         You can find more info about the events on the :ref:`documentation below <discord-api-events>`.
 
@@ -1006,7 +1076,8 @@ class Client:
         return coro
 
     async def change_presence(self, *, activity=None, status=None, afk=False):
-        """|coro|
+        """
+        |coro|
 
         Changes the client's presence.
 
@@ -1063,7 +1134,8 @@ class Client:
     # Guild stuff
 
     def fetch_guilds(self, *, limit=100, before=None, after=None):
-        """|coro|
+        """
+        |coro|
 
         Retrieves an :class:`.AsyncIterator` that enables receiving your guilds.
 
@@ -1115,10 +1187,12 @@ class Client:
         :class:`.Guild`
             The guild with the guild data parsed.
         """
+
         return GuildIterator(self, limit=limit, before=before, after=after)
 
     async def fetch_template(self, code):
-        """|coro|
+        """
+        |coro|
 
         Gets a :class:`.Template` from a discord.new URL or code.
 
@@ -1139,12 +1213,14 @@ class Client:
         :class:`.Template`
             The template from the URL/code.
         """
+
         code = utils.resolve_template(code)
         data = await self.http.get_template(code)
         return Template(data=data, state=self._connection)
 
     async def fetch_guild(self, guild_id):
-        """|coro|
+        """
+        |coro|
 
         Retrieves a :class:`.Guild` from an ID.
 
@@ -1174,11 +1250,13 @@ class Client:
         :class:`.Guild`
             The guild from the ID.
         """
+
         data = await self.http.get_guild(guild_id)
         return Guild(data=data, state=self._connection)
 
     async def create_guild(self, name, region=None, icon=None, *, code=None):
-        """|coro|
+        """
+        |coro|
 
         Creates a :class:`.Guild`.
 
@@ -1212,6 +1290,7 @@ class Client:
             The guild created. This is not the same guild that is
             added to cache.
         """
+
         if icon is not None:
             icon = utils._bytes_to_base64_data(icon)
 
@@ -1229,7 +1308,8 @@ class Client:
     # Invite management
 
     async def fetch_invite(self, url, *, with_counts=True):
-        """|coro|
+        """
+        |coro|
 
         Gets an :class:`.Invite` from a discord.gg URL or ID.
 
@@ -1266,7 +1346,8 @@ class Client:
         return Invite.from_incomplete(state=self._connection, data=data)
 
     async def delete_invite(self, invite):
-        """|coro|
+        """
+        |coro|
 
         Revokes an :class:`.Invite`, URL, or ID to an invite.
 
@@ -1294,7 +1375,8 @@ class Client:
     # Miscellaneous stuff
 
     async def fetch_widget(self, guild_id):
-        """|coro|
+        """
+        |coro|
 
         Gets a :class:`.Widget` from a guild ID.
 
@@ -1319,12 +1401,13 @@ class Client:
         :class:`.Widget`
             The guild's widget.
         """
-        data = await self.http.get_widget(guild_id)
 
+        data = await self.http.get_widget(guild_id)
         return Widget(state=self._connection, data=data)
 
     async def application_info(self):
-        """|coro|
+        """
+        |coro|
 
         Retrieves the bot's application information.
 
@@ -1338,13 +1421,15 @@ class Client:
         :class:`.AppInfo`
             The bot's application information.
         """
+
         data = await self.http.application_info()
         if 'rpc_origins' not in data:
             data['rpc_origins'] = None
         return AppInfo(self._connection, data)
 
     async def fetch_user(self, user_id):
-        """|coro|
+        """
+        |coro|
 
         Retrieves a :class:`~discord.User` based on their ID. This can only
         be used by bot accounts. You do not have to share any guilds
@@ -1372,11 +1457,13 @@ class Client:
         :class:`~discord.User`
             The user you requested.
         """
+
         data = await self.http.get_user(user_id)
         return User(state=self._connection, data=data)
 
     async def fetch_user_profile(self, user_id):
-        """|coro|
+        """
+        |coro|
 
         Gets an arbitrary user's profile.
 
@@ -1411,14 +1498,17 @@ class Client:
         since = data.get('premium_since')
         mutual_guilds = list(filter(None, map(transform, data.get('mutual_guilds', []))))
         user = data['user']
-        return Profile(flags=user.get('flags', 0),
-                       premium_since=utils.parse_time(since),
-                       mutual_guilds=mutual_guilds,
-                       user=User(data=user, state=state),
-                       connected_accounts=data['connected_accounts'])
+        return Profile(
+            flags=user.get('flags', 0),
+            premium_since=utils.parse_time(since),
+            mutual_guilds=mutual_guilds,
+            user=User(data=user, state=state),
+            connected_accounts=data['connected_accounts'],
+        )
 
     async def fetch_channel(self, channel_id):
-        """|coro|
+        """
+        |coro|
 
         Retrieves a :class:`.abc.GuildChannel` or :class:`.abc.PrivateChannel` with the specified ID.
 
@@ -1444,6 +1534,7 @@ class Client:
         Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`]
             The channel from the ID.
         """
+
         data = await self.http.get_channel(channel_id)
 
         factory, ch_type = _channel_factory(data['type'])
@@ -1460,7 +1551,8 @@ class Client:
         return channel
 
     async def fetch_webhook(self, webhook_id):
-        """|coro|
+        """
+        |coro|
 
         Retrieves a :class:`.Webhook` with the specified ID.
 
@@ -1478,5 +1570,6 @@ class Client:
         :class:`.Webhook`
             The webhook you requested.
         """
+
         data = await self.http.get_webhook(webhook_id)
         return Webhook.from_state(data, state=self._connection)

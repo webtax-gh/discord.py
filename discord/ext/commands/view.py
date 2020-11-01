@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 from .errors import UnexpectedQuoteError, InvalidEndOfQuotedStringError, ExpectedClosingQuoteError
 
+
 # map from opening quotes to closing quotes
 _quotes = {
     '"': '"',
@@ -48,7 +49,9 @@ _quotes = {
 }
 _all_quotes = set(_quotes.keys()) | set(_quotes.values())
 
+
 class StringView:
+
     def __init__(self, buffer):
         self.index = 0
         self.buffer = buffer
@@ -188,7 +191,6 @@ class StringView:
                 return ''.join(result)
 
             result.append(current)
-
 
     def __repr__(self):
         return '<StringView pos: {0.index} prev: {0.previous} end: {0.end} eof: {0.eof}>'.format(self)

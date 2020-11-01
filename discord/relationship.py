@@ -26,8 +26,10 @@ DEALINGS IN THE SOFTWARE.
 
 from .enums import RelationshipType, try_enum
 
+
 class Relationship:
-    """Represents a relationship in Discord.
+    """
+    Represents a relationship in Discord.
 
     A relationship is like a friendship, a person who is blocked, etc.
     Only non-bot accounts can have relationships.
@@ -51,7 +53,8 @@ class Relationship:
         return '<Relationship user={0.user!r} type={0.type!r}>'.format(self)
 
     async def delete(self):
-        """|coro|
+        """
+        |coro|
 
         Deletes the relationship.
 
@@ -64,7 +67,8 @@ class Relationship:
         await self._state.http.remove_relationship(self.user.id)
 
     async def accept(self):
-        """|coro|
+        """
+        |coro|
 
         Accepts the relationship request. e.g. accepting a
         friend request.

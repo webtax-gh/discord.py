@@ -32,21 +32,25 @@ __all__ = (
     'Template',
 )
 
+
 class _FriendlyHttpAttributeErrorHelper:
+
     __slots__ = ()
 
     def __getattr__(self, attr):
         raise AttributeError('PartialTemplateState does not support http methods.')
 
+
 class _PartialTemplateState:
+
     def __init__(self, *, state):
         self.__state = state
         self.http = _FriendlyHttpAttributeErrorHelper()
-    
+
     @property
     def is_bot(self):
         return self.__state.is_bot
-    
+
     @property
     def shard_count(self):
         return self.__state.shard_count
@@ -54,14 +58,14 @@ class _PartialTemplateState:
     @property
     def user(self):
         return self.__state.user
-    
+
     @property
     def self_id(self):
         return self.__state.user.id
-    
+
     def store_emoji(self, guild, packet):
         return None
-    
+
     def _get_voice_client(self, id):
         return None
 
@@ -74,8 +78,10 @@ class _PartialTemplateState:
     def __getattr__(self, attr):
         raise AttributeError('PartialTemplateState does not support {0!r}.'.format(attr))
 
+
 class Template:
-    """Represents a Discord template.
+    """
+    Represents a Discord template.
 
     .. versionadded:: 1.4
 
@@ -104,7 +110,7 @@ class Template:
 
         self.code = data['code']
         self.uses = data['usage_count']
-        self.name =  data['name']
+        self.name = data['name']
         self.description = data['description']
         creator_data = data.get('creator')
         self.creator = None if creator_data is None else self._state.store_user(creator_data)
@@ -120,11 +126,14 @@ class Template:
         self.source_guild = Guild(data=source_serialised, state=state)
 
     def __repr__(self):
-        return '<Template code={0.code!r} uses={0.uses} name={0.name!r}' \
-               ' creator={0.creator!r} source_guild={0.source_guild!r}>'.format(self)
+        return (
+            '<Template code={0.code!r} uses={0.uses} name={0.name!r}'
+            ' creator={0.creator!r} source_guild={0.source_guild!r}>'.format(self)
+        )
 
     async def create_guild(self, name, region=None, icon=None):
-        """|coro|
+        """
+        |coro|
 
         Creates a :class:`.Guild` using the template.
 
@@ -154,6 +163,7 @@ class Template:
             The guild created. This is not the same guild that is
             added to cache.
         """
+
         if icon is not None:
             icon = _bytes_to_base64_data(icon)
 

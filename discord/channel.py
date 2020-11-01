@@ -36,6 +36,7 @@ from .asset import Asset
 from .errors import ClientException, NoMoreItems, InvalidArgument
 from .webhook import Webhook
 
+
 __all__ = (
     'TextChannel',
     'VoiceChannel',
@@ -46,12 +47,15 @@ __all__ = (
     '_channel_factory',
 )
 
+
 async def _single_delete_strategy(messages):
     for m in messages:
         await m.delete()
 
+
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
-    """Represents a Discord guild text channel.
+    """
+    Represents a Discord guild text channel.
 
     .. container:: operations
 
@@ -135,7 +139,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
     @property
     def type(self):
-        """:class:`ChannelType`: The channel's Discord type."""
+        """
+        :class:`ChannelType`: The channel's Discord type.
+        """
+
         return try_enum(ChannelType, self._type)
 
     @property
@@ -154,20 +161,30 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
     @property
     def members(self):
-        """List[:class:`Member`]: Returns all members that can see this channel."""
+        """
+        List[:class:`Member`]: Returns all members that can see this channel.
+        """
+
         return [m for m in self.guild.members if self.permissions_for(m).read_messages]
 
     def is_nsfw(self):
-        """:class:`bool`: Checks if the channel is NSFW."""
+        """
+        :class:`bool`: Checks if the channel is NSFW.
+        """
+
         return self.nsfw
 
     def is_news(self):
-        """:class:`bool`: Checks if the channel is a news channel."""
+        """
+        :class:`bool`: Checks if the channel is a news channel.
+        """
+
         return self._type == ChannelType.news.value
 
     @property
     def last_message(self):
-        """Fetches the last message from this channel in cache.
+        """
+        Fetches the last message from this channel in cache.
 
         The message might not be valid or point to an existing message.
 
@@ -184,10 +201,12 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         Optional[:class:`Message`]
             The last message in this channel or ``None`` if not found.
         """
+
         return self._state._get_message(self.last_message_id) if self.last_message_id else None
 
     async def edit(self, *, reason=None, **options):
-        """|coro|
+        """
+        |coro|
 
         Edits the channel.
 
@@ -221,7 +240,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             A value of `0` disables slowmode. The maximum value possible is `21600`.
         type: :class:`ChannelType`
             Change the type of this text channel. Currently, only conversion between
-            :attr:`ChannelType.text` and :attr:`ChannelType.news` is supported. This 
+            :attr:`ChannelType.text` and :attr:`ChannelType.news` is supported. This
             is only available to guilds that contain ``NEWS`` in :attr:`Guild.features`.
         reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
@@ -239,6 +258,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         HTTPException
             Editing the channel failed.
         """
+
         await self._edit(options, reason=reason)
 
     async def clone(self, *, name=None, reason=None):
@@ -251,7 +271,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
 
     async def delete_messages(self, messages):
-        """|coro|
+        """
+        |coro|
 
         Deletes a list of messages. This is similar to :meth:`Message.delete`
         except it bulk deletes multiple messages.
@@ -285,11 +306,12 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         HTTPException
             Deleting the messages failed.
         """
+
         if not isinstance(messages, (list, tuple)):
             messages = list(messages)
 
         if len(messages) == 0:
-            return # do nothing
+            return  # do nothing
 
         if len(messages) == 1:
             message_id = messages[0].id
@@ -303,7 +325,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         await self._state.http.delete_messages(self.id, message_ids)
 
     async def purge(self, *, limit=100, check=None, before=None, after=None, around=None, oldest_first=False, bulk=True):
-        """|coro|
+        """
+        |coro|
 
         Purges a list of messages that meet the criteria given by the predicate
         ``check``. If a ``check`` is not provided then all messages are deleted
@@ -412,7 +435,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                     ret.append(msg)
 
     async def webhooks(self):
-        """|coro|
+        """
+        |coro|
 
         Gets the list of webhooks from this channel.
 
@@ -433,7 +457,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         return [Webhook.from_state(d, state=self._state) for d in data]
 
     async def create_webhook(self, *, name, avatar=None, reason=None):
-        """|coro|
+        """
+        |coro|
 
         Creates a webhook for this channel.
 
@@ -515,8 +540,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         data = await self._state.http.follow_webhook(self.id, webhook_channel_id=destination.id, reason=reason)
         return Webhook._as_follower(data, channel=destination, user=self._state.user)
 
+
 class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
-    """Represents a Discord guild voice channel.
+    """
+    Represents a Discord guild voice channel.
 
     .. container:: operations
 
@@ -582,7 +609,9 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
 
     @property
     def type(self):
-        """:class:`ChannelType`: The channel's Discord type."""
+        """
+        :class:`ChannelType`: The channel's Discord type.
+        """
         return ChannelType.voice
 
     def _update(self, guild, data):
@@ -600,7 +629,10 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
 
     @property
     def members(self):
-        """List[:class:`Member`]: Returns all members that are currently inside this voice channel."""
+        """
+        List[:class:`Member`]: Returns all members that are currently inside this voice channel.
+        """
+
         ret = []
         for user_id, state in self.guild._voice_states.items():
             if state.channel.id == self.id:
@@ -611,7 +643,8 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
 
     @property
     def voice_states(self):
-        """Returns a mapping of member IDs who have voice states in this channel.
+        """
+        Returns a mapping of member IDs who have voice states in this channel.
 
         .. versionadded:: 1.3
 
@@ -625,6 +658,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         Mapping[:class:`int`, :class:`VoiceState`]
             The mapping of member ID to a voice state.
         """
+
         return {key: value for key, value in self.guild._voice_states.items() if value.channel.id == self.id}
 
     def permissions_for(self, member):
@@ -649,7 +683,8 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
 
     async def edit(self, *, reason=None, **options):
-        """|coro|
+        """
+        |coro|
 
         Edits the channel.
 
@@ -693,8 +728,10 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
 
         await self._edit(options, reason=reason)
 
+
 class CategoryChannel(discord.abc.GuildChannel, Hashable):
-    """Represents a Discord channel category.
+    """
+    Represents a Discord channel category.
 
     These are useful to group channels to logical compartments.
 
@@ -753,11 +790,17 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
     @property
     def type(self):
-        """:class:`ChannelType`: The channel's Discord type."""
+        """
+        :class:`ChannelType`: The channel's Discord type.
+        """
+
         return ChannelType.category
 
     def is_nsfw(self):
-        """:class:`bool`: Checks if the category is NSFW."""
+        """
+        :class:`bool`: Checks if the category is NSFW.
+        """
+
         return self.nsfw
 
     async def clone(self, *, name=None, reason=None):
@@ -768,7 +811,8 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
     clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
 
     async def edit(self, *, reason=None, **options):
-        """|coro|
+        """
+        |coro|
 
         Edits the channel.
 
@@ -806,10 +850,12 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
     @property
     def channels(self):
-        """List[:class:`abc.GuildChannel`]: Returns the channels that are under this category.
+        """
+        List[:class:`abc.GuildChannel`]: Returns the channels that are under this category.
 
         These are sorted by the official Discord UI, which places voice channels below the text channels.
         """
+
         def comparator(channel):
             return (not isinstance(channel, TextChannel), channel.position)
 
@@ -819,16 +865,20 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
     @property
     def text_channels(self):
-        """List[:class:`TextChannel`]: Returns the text channels that are under this category."""
-        ret = [c for c in self.guild.channels
-            if c.category_id == self.id
-            and isinstance(c, TextChannel)]
+        """
+        List[:class:`TextChannel`]: Returns the text channels that are under this category.
+        """
+
+        ret = [c for c in self.guild.channels if c.category_id == self.id and isinstance(c, TextChannel)]
         ret.sort(key=lambda c: (c.position, c.id))
         return ret
 
     @property
     def voice_channels(self):
-        """List[:class:`VoiceChannel`]: Returns the voice channels that are under this category."""
+        """
+        List[:class:`VoiceChannel`]: Returns the voice channels that are under this category.
+        """
+
         ret = [c for c in self.guild.channels
             if c.category_id == self.id
             and isinstance(c, VoiceChannel)]
@@ -836,7 +886,8 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         return ret
 
     async def create_text_channel(self, name, *, overwrites=None, reason=None, **options):
-        """|coro|
+        """
+        |coro|
 
         A shortcut method to :meth:`Guild.create_text_channel` to create a :class:`TextChannel` in the category.
 
@@ -845,10 +896,12 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         :class:`TextChannel`
             The channel that was just created.
         """
+
         return await self.guild.create_text_channel(name, overwrites=overwrites, category=self, reason=reason, **options)
 
     async def create_voice_channel(self, name, *, overwrites=None, reason=None, **options):
-        """|coro|
+        """
+        |coro|
 
         A shortcut method to :meth:`Guild.create_voice_channel` to create a :class:`VoiceChannel` in the category.
 
@@ -857,10 +910,12 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         :class:`VoiceChannel`
             The channel that was just created.
         """
+
         return await self.guild.create_voice_channel(name, overwrites=overwrites, category=self, reason=reason, **options)
 
 class StoreChannel(discord.abc.GuildChannel, Hashable):
-    """Represents a Discord guild store channel.
+    """
+    Represents a Discord guild store channel.
 
     .. container:: operations
 
@@ -894,6 +949,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         The position in the channel list. This is a number that starts at 0. e.g. the
         top channel is position 0.
     """
+
     __slots__ = ('name', 'id', 'guild', '_state', 'nsfw',
                  'category_id', 'position', '_overwrites',)
 
@@ -919,7 +975,10 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
 
     @property
     def type(self):
-        """:class:`ChannelType`: The channel's Discord type."""
+        """
+        :class:`ChannelType`: The channel's Discord type.
+        """
+
         return ChannelType.store
 
     def permissions_for(self, member):
@@ -933,7 +992,10 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
     permissions_for.__doc__ = discord.abc.GuildChannel.permissions_for.__doc__
 
     def is_nsfw(self):
-        """:class:`bool`: Checks if the channel is NSFW."""
+        """
+        :class:`bool`: Checks if the channel is NSFW.
+        """
+
         return self.nsfw
 
     async def clone(self, *, name=None, reason=None):
@@ -944,7 +1006,8 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
     clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
 
     async def edit(self, *, reason=None, **options):
-        """|coro|
+        """
+        |coro|
 
         Edits the channel.
 
@@ -983,10 +1046,13 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         HTTPException
             Editing the channel failed.
         """
+
         await self._edit(options, reason=reason)
 
+
 class DMChannel(discord.abc.Messageable, Hashable):
-    """Represents a Discord direct message channel.
+    """
+    Represents a Discord direct message channel.
 
     .. container:: operations
 
@@ -1035,16 +1101,23 @@ class DMChannel(discord.abc.Messageable, Hashable):
 
     @property
     def type(self):
-        """:class:`ChannelType`: The channel's Discord type."""
+        """
+        :class:`ChannelType`: The channel's Discord type.
+        """
+
         return ChannelType.private
 
     @property
     def created_at(self):
-        """:class:`datetime.datetime`: Returns the direct message channel's creation time in UTC."""
+        """
+        :class:`datetime.datetime`: Returns the direct message channel's creation time in UTC.
+        """
+
         return utils.snowflake_time(self.id)
 
     def permissions_for(self, user=None):
-        """Handles permission resolution for a :class:`User`.
+        """
+        Handles permission resolution for a :class:`User`.
 
         This function is there for compatibility with other channel types.
 
@@ -1072,8 +1145,10 @@ class DMChannel(discord.abc.Messageable, Hashable):
         base.manage_messages = False
         return base
 
+
 class GroupChannel(discord.abc.Messageable, Hashable):
-    """Represents a Discord group channel.
+    """
+    Represents a Discord group channel.
 
     .. container:: operations
 
@@ -1149,21 +1224,31 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
     @property
     def type(self):
-        """:class:`ChannelType`: The channel's Discord type."""
+        """
+        :class:`ChannelType`: The channel's Discord type.
+        """
+
         return ChannelType.group
 
     @property
     def icon_url(self):
-        """:class:`Asset`: Returns the channel's icon asset if available."""
+        """
+        :class:`Asset`: Returns the channel's icon asset if available.
+        """
+
         return Asset._from_icon(self._state, self, 'channel')
 
     @property
     def created_at(self):
-        """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
+        """
+        :class:`datetime.datetime`: Returns the channel's creation time in UTC.
+        """
+
         return utils.snowflake_time(self.id)
 
     def permissions_for(self, user):
-        """Handles permission resolution for a :class:`User`.
+        """
+        Handles permission resolution for a :class:`User`.
 
         This function is there for compatibility with other channel types.
 
@@ -1225,7 +1310,8 @@ class GroupChannel(discord.abc.Messageable, Hashable):
             await req(self.id, recipient.id)
 
     async def remove_recipients(self, *recipients):
-        r"""|coro|
+        r"""
+        |coro|
 
         Removes recipients from this group.
 
@@ -1247,7 +1333,8 @@ class GroupChannel(discord.abc.Messageable, Hashable):
             await req(self.id, recipient.id)
 
     async def edit(self, **fields):
-        """|coro|
+        """
+        |coro|
 
         Edits the group.
 
@@ -1278,7 +1365,8 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         self._update_group(data)
 
     async def leave(self):
-        """|coro|
+        """
+        |coro|
 
         Leave the group.
 
@@ -1291,6 +1379,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         """
 
         await self._state.http.leave_group(self.id)
+
 
 def _channel_factory(channel_type):
     value = try_enum(ChannelType, channel_type)

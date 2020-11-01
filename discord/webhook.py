@@ -49,8 +49,10 @@ __all__ = (
 
 log = logging.getLogger(__name__)
 
+
 class WebhookAdapter:
-    """Base class for all webhook adapters.
+    """
+    Base class for all webhook adapters.
 
     Attributes
     ------------
@@ -67,7 +69,8 @@ class WebhookAdapter:
         self.webhook = webhook
 
     def request(self, verb, url, payload=None, multipart=None):
-        """Actually does the request.
+        """
+        Actually does the request.
 
         Subclasses must implement this.
 
@@ -86,6 +89,7 @@ class WebhookAdapter:
         payload: Optional[:class:`dict`]
             The JSON to send with the request, if any.
         """
+
         raise NotImplementedError()
 
     def delete_webhook(self, *, reason=None):
@@ -95,7 +99,8 @@ class WebhookAdapter:
         return self.request('PATCH', self._request_url, payload=payload, reason=reason)
 
     def handle_execution_response(self, data, *, wait):
-        """Transforms the webhook execution response into something
+        """
+        Transforms the webhook execution response into something
         more meaningful.
 
         This is mainly used to convert the data into a :class:`Message`
@@ -110,6 +115,7 @@ class WebhookAdapter:
         wait: :class:`bool`
             Whether the webhook execution was asked to wait or not.
         """
+
         raise NotImplementedError()
 
     async def _wrap_coroutine_and_cleanup(self, coro, cleanup):
@@ -161,8 +167,10 @@ class WebhookAdapter:
         # if request raises up there then this should never be `None`
         return self.handle_execution_response(maybe_coro, wait=wait)
 
+
 class AsyncWebhookAdapter(WebhookAdapter):
-    """A webhook adapter suited for use with aiohttp.
+    """
+    A webhook adapter suited for use with aiohttp.
 
     .. note::
 
@@ -256,8 +264,10 @@ class AsyncWebhookAdapter(WebhookAdapter):
         from .message import Message
         return Message(data=data, state=self.webhook._state, channel=self.webhook.channel)
 
+
 class RequestsWebhookAdapter(WebhookAdapter):
-    """A webhook adapter suited for use with ``requests``.
+    """
+    A webhook adapter suited for use with ``requests``.
 
     Only versions of :doc:`req:index` higher than 2.13.0 are supported.
 
@@ -359,13 +369,17 @@ class RequestsWebhookAdapter(WebhookAdapter):
         from .message import Message
         return Message(data=response, state=self.webhook._state, channel=self.webhook.channel)
 
+
 class _FriendlyHttpAttributeErrorHelper:
+
     __slots__ = ()
 
     def __getattr__(self, attr):
         raise AttributeError('PartialWebhookState does not support http methods.')
 
+
 class _PartialWebhookState:
+
     __slots__ = ('loop',)
 
     def __init__(self, adapter):
@@ -394,8 +408,10 @@ class _PartialWebhookState:
     def __getattr__(self, attr):
         raise AttributeError('PartialWebhookState does not support {0!r}.'.format(attr))
 
+
 class Webhook(Hashable):
-    """Represents a Discord webhook.
+    """
+    Represents a Discord webhook.
 
     Webhooks are a form to send messages to channels in Discord without a
     bot user or authentication.
@@ -477,8 +493,10 @@ class Webhook(Hashable):
         The default avatar of the webhook.
     """
 
-    __slots__ = ('id', 'type', 'guild_id', 'channel_id', 'user', 'name',
-                 'avatar', 'token', '_state', '_adapter')
+    __slots__ = (
+        'id', 'type', 'guild_id', 'channel_id', 'user', 'name',
+        'avatar', 'token', '_state', '_adapter',
+    )
 
     def __init__(self, data, *, adapter, state=None):
         self.id = int(data['id'])
@@ -505,12 +523,16 @@ class Webhook(Hashable):
 
     @property
     def url(self):
-        """:class:`str` : Returns the webhook's url."""
+        """
+        :class:`str` : Returns the webhook's url.
+        """
+
         return 'https://discord.com/api/webhooks/{}/{}'.format(self.id, self.token)
 
     @classmethod
     def partial(cls, id, token, *, adapter):
-        """Creates a partial :class:`Webhook`.
+        """
+        Creates a partial :class:`Webhook`.
 
         Parameters
         -----------
@@ -543,7 +565,8 @@ class Webhook(Hashable):
 
     @classmethod
     def from_url(cls, url, *, adapter):
-        """Creates a partial :class:`Webhook` from a webhook URL.
+        """
+        Creates a partial :class:`Webhook` from a webhook URL.
 
         Parameters
         ------------
@@ -600,29 +623,37 @@ class Webhook(Hashable):
 
     @property
     def guild(self):
-        """Optional[:class:`Guild`]: The guild this webhook belongs to.
+        """
+        Optional[:class:`Guild`]: The guild this webhook belongs to.
 
         If this is a partial webhook, then this will always return ``None``.
         """
+
         return self._state._get_guild(self.guild_id)
 
     @property
     def channel(self):
-        """Optional[:class:`TextChannel`]: The text channel this webhook belongs to.
+        """
+        Optional[:class:`TextChannel`]: The text channel this webhook belongs to.
 
         If this is a partial webhook, then this will always return ``None``.
         """
+
         guild = self.guild
         return guild and guild.get_channel(self.channel_id)
 
     @property
     def created_at(self):
-        """:class:`datetime.datetime`: Returns the webhook's creation time in UTC."""
+        """
+        :class:`datetime.datetime`: Returns the webhook's creation time in UTC.
+        """
+
         return utils.snowflake_time(self.id)
 
     @property
     def avatar_url(self):
-        """:class:`Asset`: Returns an :class:`Asset` for the avatar the webhook has.
+        """
+        :class:`Asset`: Returns an :class:`Asset` for the avatar the webhook has.
 
         If the webhook does not have a traditional avatar, an asset for
         the default avatar is returned instead.
@@ -630,10 +661,12 @@ class Webhook(Hashable):
         This is equivalent to calling :meth:`avatar_url_as` with the
         default parameters.
         """
+
         return self.avatar_url_as()
 
     def avatar_url_as(self, *, format=None, size=1024):
-        """Returns an :class:`Asset` for the avatar the webhook has.
+        """
+        Returns an :class:`Asset` for the avatar the webhook has.
 
         If the webhook does not have a traditional avatar, an asset for
         the default avatar is returned instead.
@@ -659,6 +692,7 @@ class Webhook(Hashable):
         :class:`Asset`
             The resulting CDN asset.
         """
+
         if self.avatar is None:
             # Default is always blurple apparently
             return Asset(self._state, '/embed/avatars/0.png')
@@ -675,7 +709,8 @@ class Webhook(Hashable):
         return Asset(self._state, url)
 
     def delete(self, *, reason=None):
-        """|maybecoro|
+        """
+        |maybecoro|
 
         Deletes this Webhook.
 
@@ -700,13 +735,15 @@ class Webhook(Hashable):
         InvalidArgument
             This webhook does not have a token associated with it.
         """
+
         if self.token is None:
             raise InvalidArgument('This webhook does not have a token associated with it')
 
         return self._adapter.delete_webhook(reason=reason)
 
     def edit(self, *, reason=None, **kwargs):
-        """|maybecoro|
+        """
+        |maybecoro|
 
         Edits this Webhook.
 
@@ -733,6 +770,7 @@ class Webhook(Hashable):
         InvalidArgument
             This webhook does not have a token associated with it.
         """
+
         if self.token is None:
             raise InvalidArgument('This webhook does not have a token associated with it')
 
@@ -760,9 +798,11 @@ class Webhook(Hashable):
 
         return self._adapter.edit_webhook(reason=reason, **payload)
 
-    def send(self, content=None, *, wait=False, username=None, avatar_url=None, tts=False,
-                                    file=None, files=None, embed=None, embeds=None, allowed_mentions=None):
-        """|maybecoro|
+    def send(
+            self, content=None, *, wait=False, username=None, avatar_url=None, tts=False,
+            file=None, files=None, embed=None, embeds=None, allowed_mentions=None):
+        """
+        |maybecoro|
 
         Sends a message using the webhook.
 
@@ -867,5 +907,8 @@ class Webhook(Hashable):
         return self._adapter.execute_webhook(wait=wait, file=file, files=files, payload=payload)
 
     def execute(self, *args, **kwargs):
-        """An alias for :meth:`~.Webhook.send`."""
+        """
+        An alias for :meth:`~.Webhook.send`.
+        """
+
         return self.send(*args, **kwargs)

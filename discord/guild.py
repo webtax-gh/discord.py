@@ -54,7 +54,8 @@ _GuildLimit = namedtuple('_GuildLimit', 'emoji bitrate filesize')
 
 
 class Guild(Hashable):
-    """Represents a Discord guild.
+    """
+    Represents a Discord guild.
 
     This is referred to as a "server" in the official Discord UI.
 
@@ -163,16 +164,18 @@ class Guild(Hashable):
         .. versionadded:: 1.3
     """
 
-    __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
-                 'name', 'id', 'unavailable', 'banner', 'region', '_state',
-                 '_roles', '_member_count', '_large',
-                 'owner_id', 'mfa_level', 'emojis', 'features',
-                 'verification_level', 'explicit_content_filter', 'splash',
-                 '_voice_states', '_system_channel_id', 'default_notifications',
-                 'description', 'max_presences', 'max_members', 'max_video_channel_users',
-                 'premium_tier', 'premium_subscription_count', '_system_channel_flags',
-                 'preferred_locale', 'discovery_splash', '_rules_channel_id',
-                 '_public_updates_channel_id')
+    __slots__ = (
+        'afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
+        'name', 'id', 'unavailable', 'banner', 'region', '_state',
+        '_roles', '_member_count', '_large',
+        'owner_id', 'mfa_level', 'emojis', 'features',
+        'verification_level', 'explicit_content_filter', 'splash',
+        '_voice_states', '_system_channel_id', 'default_notifications',
+        'description', 'max_presences', 'max_members', 'max_video_channel_users',
+        'premium_tier', 'premium_subscription_count', '_system_channel_flags',
+        'preferred_locale', 'discovery_splash', '_rules_channel_id',
+        '_public_updates_channel_id',
+    )
 
     _PREMIUM_GUILD_LIMITS = {
         None: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
@@ -283,7 +286,7 @@ class Guild(Hashable):
         self.unavailable = guild.get('unavailable', False)
         self.id = int(guild['id'])
         self._roles = {}
-        state = self._state # speed up attribute access
+        state = self._state  # speed up attribute access
         for r in guild.get('roles', []):
             role = Role(guild=self, data=r, state=state)
             self._roles[role.id] = role
@@ -344,16 +347,21 @@ class Guild(Hashable):
 
     @property
     def channels(self):
-        """List[:class:`abc.GuildChannel`]: A list of channels that belongs to this guild."""
+        """
+        List[:class:`abc.GuildChannel`]: A list of channels that belongs to this guild.
+        """
+
         return list(self._channels.values())
 
     @property
     def large(self):
-        """:class:`bool`: Indicates if the guild is a 'large' guild.
+        """
+        :class:`bool`: Indicates if the guild is a 'large' guild.
 
         A large guild is defined as having more than ``large_threshold`` count
         members, which for this library is set to the maximum of 250.
         """
+
         if self._large is None:
             try:
                 return self._member_count >= 250
@@ -363,49 +371,61 @@ class Guild(Hashable):
 
     @property
     def voice_channels(self):
-        """List[:class:`VoiceChannel`]: A list of voice channels that belongs to this guild.
+        """
+        List[:class:`VoiceChannel`]: A list of voice channels that belongs to this guild.
 
         This is sorted by the position and are in UI order from top to bottom.
         """
+
         r = [ch for ch in self._channels.values() if isinstance(ch, VoiceChannel)]
         r.sort(key=lambda c: (c.position, c.id))
         return r
 
     @property
     def me(self):
-        """:class:`Member`: Similar to :attr:`Client.user` except an instance of :class:`Member`.
+        """
+        :class:`Member`: Similar to :attr:`Client.user` except an instance of :class:`Member`.
         This is essentially used to get the member version of yourself.
         """
+
         self_id = self._state.user.id
         return self.get_member(self_id)
 
     @property
     def voice_client(self):
-        """Optional[:class:`VoiceProtocol`]: Returns the :class:`VoiceProtocol` associated with this guild, if any."""
+        """
+        Optional[:class:`VoiceProtocol`]: Returns the :class:`VoiceProtocol` associated with this guild, if any.
+        """
+
         return self._state._get_voice_client(self.id)
 
     @property
     def text_channels(self):
-        """List[:class:`TextChannel`]: A list of text channels that belongs to this guild.
+        """
+        List[:class:`TextChannel`]: A list of text channels that belongs to this guild.
 
         This is sorted by the position and are in UI order from top to bottom.
         """
+
         r = [ch for ch in self._channels.values() if isinstance(ch, TextChannel)]
         r.sort(key=lambda c: (c.position, c.id))
         return r
 
     @property
     def categories(self):
-        """List[:class:`CategoryChannel`]: A list of categories that belongs to this guild.
+        """
+        List[:class:`CategoryChannel`]: A list of categories that belongs to this guild.
 
         This is sorted by the position and are in UI order from top to bottom.
         """
+
         r = [ch for ch in self._channels.values() if isinstance(ch, CategoryChannel)]
         r.sort(key=lambda c: (c.position, c.id))
         return r
 
     def by_category(self):
-        """Returns every :class:`CategoryChannel` and their associated channels.
+        """
+        Returns every :class:`CategoryChannel` and their associated channels.
 
         These channels and categories are sorted in the official Discord UI order.
 
@@ -417,6 +437,7 @@ class Guild(Hashable):
         List[Tuple[Optional[:class:`CategoryChannel`], List[:class:`abc.GuildChannel`]]]:
             The categories and their associated channels.
         """
+
         grouped = {}
         for channel in self._channels.values():
             if isinstance(channel, CategoryChannel):
@@ -440,7 +461,8 @@ class Guild(Hashable):
         return as_list
 
     def get_channel(self, channel_id):
-        """Returns a channel with the given ID.
+        """
+        Returns a channel with the given ID.
 
         Parameters
         -----------
@@ -452,37 +474,45 @@ class Guild(Hashable):
         Optional[:class:`.abc.GuildChannel`]
             The returned channel or ``None`` if not found.
         """
+
         return self._channels.get(channel_id)
 
     @property
     def system_channel(self):
-        """Optional[:class:`TextChannel`]: Returns the guild's channel used for system messages.
+        """
+        Optional[:class:`TextChannel`]: Returns the guild's channel used for system messages.
 
         If no channel is set, then this returns ``None``.
         """
+
         channel_id = self._system_channel_id
         return channel_id and self._channels.get(channel_id)
 
     @property
     def system_channel_flags(self):
-        """:class:`SystemChannelFlags`: Returns the guild's system channel settings."""
+        """
+        :class:`SystemChannelFlags`: Returns the guild's system channel settings.
+        """
         return SystemChannelFlags._from_value(self._system_channel_flags)
 
     @property
     def rules_channel(self):
-        """Optional[:class:`TextChannel`]: Return's the guild's channel used for the rules.
+        """
+        Optional[:class:`TextChannel`]: Return's the guild's channel used for the rules.
         Must be a discoverable guild.
 
         If no channel is set, then this returns ``None``.
 
         .. versionadded:: 1.3
         """
+
         channel_id = self._rules_channel_id
         return channel_id and self._channels.get(channel_id)
 
     @property
     def public_updates_channel(self):
-        """Optional[:class:`TextChannel`]: Return's the guild's channel where admins and
+        """
+        Optional[:class:`TextChannel`]: Return's the guild's channel where admins and
         moderators of the guilds receive notices from Discord. This is only available to
         guilds that contain ``PUBLIC`` in :attr:`Guild.features`.
 
@@ -490,33 +520,47 @@ class Guild(Hashable):
 
         .. versionadded:: 1.4
         """
+
         channel_id = self._public_updates_channel_id
         return channel_id and self._channels.get(channel_id)
 
     @property
     def emoji_limit(self):
-        """:class:`int`: The maximum number of emoji slots this guild has."""
+        """
+        :class:`int`: The maximum number of emoji slots this guild has.
+        """
+
         more_emoji = 200 if 'MORE_EMOJI' in self.features else 50
         return max(more_emoji, self._PREMIUM_GUILD_LIMITS[self.premium_tier].emoji)
 
     @property
     def bitrate_limit(self):
-        """:class:`float`: The maximum bitrate for voice channels this guild can have."""
+        """
+        :class:`float`: The maximum bitrate for voice channels this guild can have.
+        """
+
         vip_guild = self._PREMIUM_GUILD_LIMITS[1].bitrate if 'VIP_REGIONS' in self.features else 96e3
         return max(vip_guild, self._PREMIUM_GUILD_LIMITS[self.premium_tier].bitrate)
 
     @property
     def filesize_limit(self):
-        """:class:`int`: The maximum number of bytes files can have when uploaded to this guild."""
+        """
+        :class:`int`: The maximum number of bytes files can have when uploaded to this guild.
+        """
+
         return self._PREMIUM_GUILD_LIMITS[self.premium_tier].filesize
 
     @property
     def members(self):
-        """List[:class:`Member`]: A list of members that belong to this guild."""
+        """
+        List[:class:`Member`]: A list of members that belong to this guild.
+        """
+
         return list(self._members.values())
 
     def get_member(self, user_id):
-        """Returns a member with the given ID.
+        """
+        Returns a member with the given ID.
 
         Parameters
         -----------
@@ -528,24 +572,31 @@ class Guild(Hashable):
         Optional[:class:`Member`]
             The member or ``None`` if not found.
         """
+
         return self._members.get(user_id)
 
     @property
     def premium_subscribers(self):
-        """List[:class:`Member`]: A list of members who have "boosted" this guild."""
+        """
+        List[:class:`Member`]: A list of members who have "boosted" this guild.
+        """
+
         return [member for member in self.members if member.premium_since is not None]
 
     @property
     def roles(self):
-        """List[:class:`Role`]: Returns a :class:`list` of the guild's roles in hierarchy order.
+        """
+        List[:class:`Role`]: Returns a :class:`list` of the guild's roles in hierarchy order.
 
         The first element of this list will be the lowest role in the
         hierarchy.
         """
+
         return sorted(self._roles.values())
 
     def get_role(self, role_id):
-        """Returns a role with the given ID.
+        """
+        Returns a role with the given ID.
 
         Parameters
         -----------
@@ -557,29 +608,43 @@ class Guild(Hashable):
         Optional[:class:`Role`]
             The role or ``None`` if not found.
         """
+
         return self._roles.get(role_id)
 
     @property
     def default_role(self):
-        """:class:`Role`: Gets the @everyone role that all members have by default."""
+        """
+        :class:`Role`: Gets the @everyone role that all members have by default.
+        """
+
         return self.get_role(self.id)
 
     @property
     def owner(self):
-        """Optional[:class:`Member`]: The member that owns the guild."""
+        """
+        Optional[:class:`Member`]: The member that owns the guild.
+        """
+
         return self.get_member(self.owner_id)
 
     @property
     def icon_url(self):
-        """:class:`Asset`: Returns the guild's icon asset."""
+        """
+        :class:`Asset`: Returns the guild's icon asset.
+        """
+
         return self.icon_url_as()
 
     def is_icon_animated(self):
-        """:class:`bool`: Returns True if the guild has an animated icon."""
+        """
+        :class:`bool`: Returns True if the guild has an animated icon.
+        """
+
         return bool(self.icon and self.icon.startswith('a_'))
 
     def icon_url_as(self, *, format=None, static_format='webp', size=1024):
-        """Returns an :class:`Asset` for the guild's icon.
+        """
+        Returns an :class:`Asset` for the guild's icon.
 
         The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif', and
         'gif' is only valid for animated avatars. The size must be a power of 2
@@ -607,15 +672,20 @@ class Guild(Hashable):
         :class:`Asset`
             The resulting CDN asset.
         """
+
         return Asset._from_guild_icon(self._state, self, format=format, static_format=static_format, size=size)
 
     @property
     def banner_url(self):
-        """:class:`Asset`: Returns the guild's banner asset."""
+        """
+        :class:`Asset`: Returns the guild's banner asset.
+        """
+
         return self.banner_url_as()
 
     def banner_url_as(self, *, format='webp', size=2048):
-        """Returns an :class:`Asset` for the guild's banner.
+        """
+        Returns an :class:`Asset` for the guild's banner.
 
         The format must be one of 'webp', 'jpeg', or 'png'. The
         size must be a power of 2 between 16 and 4096.
@@ -637,15 +707,20 @@ class Guild(Hashable):
         :class:`Asset`
             The resulting CDN asset.
         """
+
         return Asset._from_guild_image(self._state, self.id, self.banner, 'banners', format=format, size=size)
 
     @property
     def splash_url(self):
-        """:class:`Asset`: Returns the guild's invite splash asset."""
+        """
+        :class:`Asset`: Returns the guild's invite splash asset.
+        """
+
         return self.splash_url_as()
 
     def splash_url_as(self, *, format='webp', size=2048):
-        """Returns an :class:`Asset` for the guild's invite splash.
+        """
+        Returns an :class:`Asset` for the guild's invite splash.
 
         The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
         size must be a power of 2 between 16 and 4096.
@@ -667,18 +742,22 @@ class Guild(Hashable):
         :class:`Asset`
             The resulting CDN asset.
         """
+
         return Asset._from_guild_image(self._state, self.id, self.splash, 'splashes', format=format, size=size)
 
     @property
     def discovery_splash_url(self):
-        """:class:`Asset`: Returns the guild's discovery splash asset.
+        """
+        :class:`Asset`: Returns the guild's discovery splash asset.
 
         .. versionadded:: 1.3
         """
+
         return self.discovery_splash_url_as()
 
     def discovery_splash_url_as(self, *, format='webp', size=2048):
-        """Returns an :class:`Asset` for the guild's discovery splash.
+        """
+        Returns an :class:`Asset` for the guild's discovery splash.
 
         The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
         size must be a power of 2 between 16 and 4096.
@@ -702,23 +781,26 @@ class Guild(Hashable):
         :class:`Asset`
             The resulting CDN asset.
         """
+
         return Asset._from_guild_image(self._state, self.id, self.discovery_splash, 'discovery-splashes', format=format, size=size)
 
     @property
     def member_count(self):
-        """:class:`int`: Returns the true member count regardless of it being loaded fully or not.
+        """
+        :class:`int`: Returns the true member count regardless of it being loaded fully or not.
 
         .. warning::
 
             Due to a Discord limitation, in order for this attribute to remain up-to-date and
             accurate, it requires :attr:`Intents.members` to be specified.
-
         """
+
         return self._member_count
 
     @property
     def chunked(self):
-        """:class:`bool`: Returns a boolean indicating if the guild is "chunked".
+        """
+        :class:`bool`: Returns a boolean indicating if the guild is "chunked".
 
         A chunked guild means that :attr:`member_count` is equal to the
         number of members stored in the internal :attr:`members` cache.
@@ -726,6 +808,7 @@ class Guild(Hashable):
         If this value returns ``False``, then you should request for
         offline members.
         """
+
         count = getattr(self, '_member_count', None)
         if count is None:
             return False
@@ -733,7 +816,10 @@ class Guild(Hashable):
 
     @property
     def shard_id(self):
-        """:class:`int`: Returns the shard ID for this guild if applicable."""
+        """
+        :class:`int`: Returns the shard ID for this guild if applicable.
+        """
+
         count = self._state.shard_count
         if count is None:
             return None
@@ -741,11 +827,15 @@ class Guild(Hashable):
 
     @property
     def created_at(self):
-        """:class:`datetime.datetime`: Returns the guild's creation time in UTC."""
+        """
+        :class:`datetime.datetime`: Returns the guild's creation time in UTC.
+        """
+
         return utils.snowflake_time(self.id)
 
     def get_member_named(self, name):
-        """Returns the first member found that matches the name provided.
+        """
+        Returns the first member found that matches the name provided.
 
         The name can have an optional discriminator argument, e.g. "Jake#0001"
         or "Jake" will both do the lookup. However the former will give a more
@@ -825,7 +915,8 @@ class Guild(Hashable):
                                                permission_overwrites=perms, **options)
 
     async def create_text_channel(self, name, *, overwrites=None, category=None, reason=None, **options):
-        """|coro|
+        """
+        |coro|
 
         Creates a :class:`TextChannel` for the guild.
 
@@ -902,6 +993,7 @@ class Guild(Hashable):
         :class:`TextChannel`
             The channel that was just created.
         """
+
         data = await self._create_channel(name, overwrites, ChannelType.text, category, reason=reason, **options)
         channel = TextChannel(state=self._state, guild=self, data=data)
 
@@ -910,7 +1002,8 @@ class Guild(Hashable):
         return channel
 
     async def create_voice_channel(self, name, *, overwrites=None, category=None, reason=None, **options):
-        """|coro|
+        """
+        |coro|
 
         This is similar to :meth:`create_text_channel` except makes a :class:`VoiceChannel` instead, in addition
         to having the following new parameters.
@@ -936,6 +1029,7 @@ class Guild(Hashable):
         :class:`VoiceChannel`
             The channel that was just created.
         """
+
         data = await self._create_channel(name, overwrites, ChannelType.voice, category, reason=reason, **options)
         channel = VoiceChannel(state=self._state, guild=self, data=data)
 
@@ -944,7 +1038,8 @@ class Guild(Hashable):
         return channel
 
     async def create_category(self, name, *, overwrites=None, reason=None, position=None):
-        """|coro|
+        """
+        |coro|
 
         Same as :meth:`create_text_channel` except makes a :class:`CategoryChannel` instead.
 
@@ -967,6 +1062,7 @@ class Guild(Hashable):
         :class:`CategoryChannel`
             The channel that was just created.
         """
+
         data = await self._create_channel(name, overwrites, ChannelType.category, reason=reason, position=position)
         channel = CategoryChannel(state=self._state, guild=self, data=data)
 
@@ -977,7 +1073,8 @@ class Guild(Hashable):
     create_category_channel = create_category
 
     async def leave(self):
-        """|coro|
+        """
+        |coro|
 
         Leaves the guild.
 
@@ -991,10 +1088,12 @@ class Guild(Hashable):
         HTTPException
             Leaving the guild failed.
         """
+
         await self._state.http.leave_guild(self.id)
 
     async def delete(self):
-        """|coro|
+        """
+        |coro|
 
         Deletes the guild. You must be the guild owner to delete the
         guild.
@@ -1010,7 +1109,8 @@ class Guild(Hashable):
         await self._state.http.delete_guild(self.id)
 
     async def edit(self, *, reason=None, **fields):
-        """|coro|
+        """
+        |coro|
 
         Edits the guild.
 
@@ -1199,7 +1299,8 @@ class Guild(Hashable):
         await http.edit_guild(self.id, reason=reason, **fields)
 
     async def fetch_channels(self):
-        """|coro|
+        """
+        |coro|
 
         Retrieves all :class:`abc.GuildChannel` that the guild has.
 
@@ -1221,6 +1322,7 @@ class Guild(Hashable):
         List[:class:`abc.GuildChannel`]
             All channels in the guild.
         """
+
         data = await self._state.http.get_all_guild_channels(self.id)
 
         def convert(d):
@@ -1234,7 +1336,8 @@ class Guild(Hashable):
         return [convert(d) for d in data]
 
     def fetch_members(self, *, limit=1000, after=None):
-        """|coro|
+        """
+        |coro|
 
         Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members.
 
@@ -1278,10 +1381,12 @@ class Guild(Hashable):
             members = await guild.fetch_members(limit=150).flatten()
             # members is now a list of Member...
         """
+
         return MemberIterator(self, limit=limit, after=after)
 
     async def fetch_member(self, member_id):
-        """|coro|
+        """
+        |coro|
 
         Retreives a :class:`Member` from a guild ID, and a member ID.
 
@@ -1306,11 +1411,13 @@ class Guild(Hashable):
         :class:`Member`
             The member from the member ID.
         """
+
         data = await self._state.http.get_member(self.id, member_id)
         return Member(data=data, state=self._state, guild=self)
 
     async def fetch_ban(self, user):
-        """|coro|
+        """
+        |coro|
 
         Retrieves the :class:`BanEntry` for a user, which is a namedtuple
         with a ``user`` and ``reason`` field. See :meth:`bans` for more
@@ -1338,6 +1445,7 @@ class Guild(Hashable):
         BanEntry
             The BanEntry object for the specified user.
         """
+
         data = await self._state.http.get_ban(user.id, self.id)
         return BanEntry(
             user=User(state=self._state, data=data['user']),
@@ -1345,7 +1453,8 @@ class Guild(Hashable):
         )
 
     async def bans(self):
-        """|coro|
+        """
+        |coro|
 
         Retrieves all the users that are banned from the guild.
 
@@ -1371,12 +1480,11 @@ class Guild(Hashable):
         """
 
         data = await self._state.http.get_bans(self.id)
-        return [BanEntry(user=User(state=self._state, data=e['user']),
-                         reason=e['reason'])
-                for e in data]
+        return [BanEntry(user=User(state=self._state, data=e['user']), reason=e['reason']) for e in data]
 
     async def prune_members(self, *, days, compute_prune_count=True, roles=None, reason=None):
-        r"""|coro|
+        r"""
+        |coro|
 
         Prunes the guild from its inactive members.
 
@@ -1435,7 +1543,8 @@ class Guild(Hashable):
         return data['pruned']
 
     async def webhooks(self):
-        """|coro|
+        """
+        |coro|
 
         Gets the list of webhooks from this guild.
 
@@ -1456,7 +1565,8 @@ class Guild(Hashable):
         return [Webhook.from_state(d, state=self._state) for d in data]
 
     async def estimate_pruned_members(self, *, days):
-        """|coro|
+        """
+        |coro|
 
         Similar to :meth:`prune_members` except instead of actually
         pruning members, it returns how many members it would prune
@@ -1489,7 +1599,8 @@ class Guild(Hashable):
         return data['pruned']
 
     async def invites(self):
-        """|coro|
+        """
+        |coro|
 
         Returns a list of all active instant invites from the guild.
 
@@ -1516,11 +1627,11 @@ class Guild(Hashable):
             invite['channel'] = channel
             invite['guild'] = self
             result.append(Invite(state=self._state, data=invite))
-
         return result
 
     async def create_integration(self, *, type, id):
-        """|coro|
+        """
+        |coro|
 
         Attaches an integration to the guild.
 
@@ -1543,10 +1654,12 @@ class Guild(Hashable):
         HTTPException
             The account could not be found.
         """
+
         await self._state.http.create_integration(self.id, type, id)
 
     async def integrations(self):
-        """|coro|
+        """
+        |coro|
 
         Returns a list of all integrations attached to the guild.
 
@@ -1567,11 +1680,13 @@ class Guild(Hashable):
         List[:class:`Integration`]
             The list of integrations that are attached to the guild.
         """
+
         data = await self._state.http.get_all_integrations(self.id)
         return [Integration(guild=self, data=d) for d in data]
 
     async def fetch_emojis(self):
-        r"""|coro|
+        r"""
+        |coro|
 
         Retrieves all custom :class:`Emoji`\s from the guild.
 
@@ -1589,11 +1704,13 @@ class Guild(Hashable):
         List[:class:`Emoji`]
             The retrieved emojis.
         """
+
         data = await self._state.http.get_all_custom_emojis(self.id)
         return [Emoji(guild=self, state=self._state, data=d) for d in data]
 
     async def fetch_emoji(self, emoji_id):
-        """|coro|
+        """
+        |coro|
 
         Retrieves a custom :class:`Emoji` from the guild.
 
@@ -1619,11 +1736,13 @@ class Guild(Hashable):
         :class:`Emoji`
             The retrieved emoji.
         """
+
         data = await self._state.http.get_custom_emoji(self.id, emoji_id)
         return Emoji(guild=self, state=self._state, data=data)
 
     async def create_custom_emoji(self, *, name, image, roles=None, reason=None):
-        r"""|coro|
+        r"""
+        |coro|
 
         Creates a custom :class:`Emoji` for the guild.
 
@@ -1665,7 +1784,8 @@ class Guild(Hashable):
         return self._state.store_emoji(self, data)
 
     async def fetch_roles(self):
-        """|coro|
+        """
+        |coro|
 
         Retrieves all :class:`Role` that the guild has.
 
@@ -1685,11 +1805,13 @@ class Guild(Hashable):
         List[:class:`Role`]
             All roles in the guild.
         """
+
         data = await self._state.http.get_roles(self.id)
         return [Role(guild=self, state=self._state, data=d) for d in data]
 
     async def create_role(self, *, reason=None, **fields):
-        """|coro|
+        """
+        |coro|
 
         Creates a :class:`Role` for the guild.
 
@@ -1757,7 +1879,8 @@ class Guild(Hashable):
         return role
 
     async def edit_role_positions(self, positions, *, reason=None):
-        """|coro|
+        """
+        |coro|
 
         Bulk edits a list of :class:`Role` in the guild.
 
@@ -1800,6 +1923,7 @@ class Guild(Hashable):
         List[:class:`Role`]
             A list of all the roles in the guild.
         """
+
         if not isinstance(positions, dict):
             raise InvalidArgument('positions parameter expects a dict.')
 
@@ -1823,7 +1947,8 @@ class Guild(Hashable):
         return roles
 
     async def kick(self, user, *, reason=None):
-        """|coro|
+        """
+        |coro|
 
         Kicks a user from the guild.
 
@@ -1846,10 +1971,12 @@ class Guild(Hashable):
         HTTPException
             Kicking failed.
         """
+
         await self._state.http.kick(user.id, self.id, reason=reason)
 
     async def ban(self, user, *, reason=None, delete_message_days=1):
-        """|coro|
+        """
+        |coro|
 
         Bans a user from the guild.
 
@@ -1875,10 +2002,12 @@ class Guild(Hashable):
         HTTPException
             Banning failed.
         """
+
         await self._state.http.ban(user.id, self.id, delete_message_days, reason=reason)
 
     async def unban(self, user, *, reason=None):
-        """|coro|
+        """
+        |coro|
 
         Unbans a user from the guild.
 
@@ -1901,10 +2030,12 @@ class Guild(Hashable):
         HTTPException
             Unbanning failed.
         """
+
         await self._state.http.unban(user.id, self.id, reason=reason)
 
     async def vanity_invite(self):
-        """|coro|
+        """
+        |coro|
 
         Returns the guild's special vanity invite.
 
@@ -1942,7 +2073,8 @@ class Guild(Hashable):
         return Invite(state=self._state, data=payload)
 
     def ack(self):
-        """|coro|
+        """
+        |coro|
 
         Marks every message in this guild as read.
 
@@ -1962,7 +2094,8 @@ class Guild(Hashable):
         return state.http.ack_guild(self.id)
 
     def audit_logs(self, *, limit=100, before=None, after=None, oldest_first=None, user=None, action=None):
-        """Returns an :class:`AsyncIterator` that enables receiving the guild's audit logs.
+        """
+        Returns an :class:`AsyncIterator` that enables receiving the guild's audit logs.
 
         You must have the :attr:`~Permissions.view_audit_log` permission to use this.
 
@@ -2014,6 +2147,7 @@ class Guild(Hashable):
         :class:`AuditLogEntry`
             The audit log entry.
         """
+
         if user:
             user = user.id
 
@@ -2024,7 +2158,8 @@ class Guild(Hashable):
                                 oldest_first=oldest_first, user_id=user, action_type=action)
 
     async def widget(self):
-        """|coro|
+        """
+        |coro|
 
         Returns the widget of the guild.
 
@@ -2044,12 +2179,14 @@ class Guild(Hashable):
         :class:`Widget`
             The guild's widget.
         """
+
         data = await self._state.http.get_widget(self.id)
 
         return Widget(state=self._state, data=data)
 
     async def chunk(self, *, cache=True):
-        """|coro|
+        """
+        |coro|
 
         Requests all members that belong to this guild. In order to use this,
         :meth:`Intents.members` must be enabled.
@@ -2075,7 +2212,8 @@ class Guild(Hashable):
         return await self._state.chunk_guild(self, cache=cache)
 
     async def query_members(self, query=None, *, limit=5, user_ids=None, cache=True):
-        """|coro|
+        """
+        |coro|
 
         Request members that belong to this guild whose username starts with
         the query given.
@@ -2127,7 +2265,8 @@ class Guild(Hashable):
         return await self._state.query_members(self, query=query, limit=limit, user_ids=user_ids, cache=cache)
 
     async def change_voice_state(self, *, channel, self_mute=False, self_deaf=False):
-        """|coro|
+        """
+        |coro|
 
         Changes client's voice state in the guild.
 
@@ -2142,6 +2281,7 @@ class Guild(Hashable):
         self_deaf: :class:`bool`
             Indicates if the client should be self-deafened.
         """
+
         ws = self._state._get_websocket(self.id)
         channel_id = channel.id if channel else None
         await ws.voice_state(self.id, channel_id, self_mute, self_deaf)

@@ -40,10 +40,13 @@ c_float_ptr = ctypes.POINTER(ctypes.c_float)
 
 _lib = None
 
+
 class EncoderStruct(ctypes.Structure):
     pass
 
+
 EncoderStructPtr = ctypes.POINTER(EncoderStruct)
+
 
 def _err_lt(result, func, args):
     if result < 0:
@@ -51,12 +54,14 @@ def _err_lt(result, func, args):
         raise OpusError(result)
     return result
 
+
 def _err_ne(result, func, args):
     ret = args[-1]._obj
     if ret.value != 0:
         log.info('error has happened in %s', func.__name__)
         raise OpusError(ret.value)
     return result
+
 
 # A list of exported functions.
 # The first argument is obviously the name.
@@ -77,6 +82,7 @@ exported_functions = [
     ('opus_encoder_destroy',
         [EncoderStructPtr], None, None),
 ]
+
 
 def libopus_loader(name):
     # create the library...
@@ -102,6 +108,7 @@ def libopus_loader(name):
 
     return lib
 
+
 def _load_default():
     global _lib
     try:
@@ -117,8 +124,10 @@ def _load_default():
 
     return _lib is not None
 
+
 def load_opus(name):
-    """Loads the libopus shared library for use with voice.
+    """
+    Loads the libopus shared library for use with voice.
 
     If this function is not called then the library uses the function
     :func:`ctypes.util.find_library` and then loads that one if available.
@@ -152,11 +161,14 @@ def load_opus(name):
     name: :class:`str`
         The filename of the shared library.
     """
+
     global _lib
     _lib = libopus_loader(name)
 
+
 def is_loaded():
-    """Function to check if opus lib is successfully loaded either
+    """
+    Function to check if opus lib is successfully loaded either
     via the :func:`ctypes.util.find_library` call of :func:`load_opus`.
 
     This must return ``True`` for voice to work.
@@ -166,11 +178,14 @@ def is_loaded():
     :class:`bool`
         Indicates if the opus library has been loaded.
     """
+
     global _lib
     return _lib is not None
 
+
 class OpusError(DiscordException):
-    """An exception that is thrown for libopus related errors.
+    """
+    An exception that is thrown for libopus related errors.
 
     Attributes
     ----------
@@ -184,8 +199,10 @@ class OpusError(DiscordException):
         log.info('"%s" has happened', msg)
         super().__init__(msg)
 
+
 class OpusNotLoaded(DiscordException):
     """An exception that is thrown for when libopus is not loaded."""
+
     pass
 
 
@@ -200,6 +217,7 @@ CTL_SET_FEC          = 4012
 CTL_SET_PLP          = 4014
 CTL_SET_SIGNAL       = 4024
 
+
 band_ctl = {
     'narrow': 1101,
     'medium': 1102,
@@ -208,17 +226,20 @@ band_ctl = {
     'full': 1105,
 }
 
+
 signal_ctl = {
     'auto': -1000,
     'voice': 3001,
     'music': 3002,
 }
 
+
 class Encoder:
+
     SAMPLING_RATE = 48000
     CHANNELS = 2
     FRAME_LENGTH = 20
-    SAMPLE_SIZE = 4 # (bit_rate / 8) * CHANNELS (bit_rate == 16)
+    SAMPLE_SIZE = 4  # (bit_rate / 8) * CHANNELS (bit_rate == 16)
     SAMPLES_PER_FRAME = int(SAMPLING_RATE / 1000 * FRAME_LENGTH)
 
     FRAME_SIZE = SAMPLES_PER_FRAME * SAMPLE_SIZE

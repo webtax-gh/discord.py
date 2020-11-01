@@ -24,6 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+
 class _FakeBool:
     def __repr__(self):
         return 'True'
@@ -34,10 +35,13 @@ class _FakeBool:
     def __bool__(self):
         return True
 
+
 default = _FakeBool()
 
+
 class AllowedMentions:
-    """A class that represents what mentions are allowed in a message.
+    """
+    A class that represents what mentions are allowed in a message.
 
     This class can be set during :class:`Client` initialisation to apply
     to every message sent. It can also be applied on a per message basis
@@ -70,18 +74,22 @@ class AllowedMentions:
 
     @classmethod
     def all(cls):
-        """A factory method that returns a :class:`AllowedMentions` with all fields explicitly set to ``True``
+        """
+        A factory method that returns a :class:`AllowedMentions` with all fields explicitly set to ``True``
 
         .. versionadded:: 1.5
         """
+
         return cls(everyone=True, users=True, roles=True)
 
     @classmethod
     def none(cls):
-        """A factory method that returns a :class:`AllowedMentions` with all fields set to ``False``
+        """
+        A factory method that returns a :class:`AllowedMentions` with all fields set to ``False``
 
         .. versionadded:: 1.5
         """
+
         return cls(everyone=False, users=False, roles=False)
 
     def to_dict(self):
@@ -91,14 +99,14 @@ class AllowedMentions:
         if self.everyone:
             parse.append('everyone')
 
-        if self.users == True:
+        if self.users is True:
             parse.append('users')
-        elif self.users != False:
+        elif self.users is not False:
             data['users'] = [x.id for x in self.users]
 
-        if self.roles == True:
+        if self.roles is True:
             parse.append('roles')
-        elif self.roles != False:
+        elif self.roles is not False:
             data['roles'] = [x.id for x in self.roles]
 
         data['parse'] = parse

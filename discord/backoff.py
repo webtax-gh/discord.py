@@ -27,8 +27,10 @@ DEALINGS IN THE SOFTWARE.
 import time
 import random
 
+
 class ExponentialBackoff:
-    """An implementation of the exponential backoff algorithm
+    """
+    An implementation of the exponential backoff algorithm
 
     Provides a convenient interface to implement an exponential backoff
     for reconnecting or retrying transmissions in a distributed network.
@@ -64,7 +66,8 @@ class ExponentialBackoff:
         self._randfunc = rand.randrange if integral else rand.uniform
 
     def delay(self):
-        """Compute the next delay
+        """
+        Compute the next delay
 
         Returns the next delay to wait according to the exponential
         backoff algorithm.  This is a value between 0 and base * 2^exp
@@ -74,6 +77,7 @@ class ExponentialBackoff:
         If a period of more than base * 2^11 has passed since the last
         retry, the exponent is reset to 1.
         """
+
         invocation = time.monotonic()
         interval = invocation - self._last_invocation
         self._last_invocation = invocation

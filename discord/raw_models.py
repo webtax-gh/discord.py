@@ -24,13 +24,17 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+
 class _RawReprMixin:
+
     def __repr__(self):
         value = ' '.join('%s=%r' % (attr, getattr(self, attr)) for attr in self.__slots__)
         return '<%s %s>' % (self.__class__.__name__, value)
 
+
 class RawMessageDeleteEvent(_RawReprMixin):
-    """Represents the event payload for a :func:`on_raw_message_delete` event.
+    """
+    Represents the event payload for a :func:`on_raw_message_delete` event.
 
     Attributes
     ------------
@@ -55,8 +59,10 @@ class RawMessageDeleteEvent(_RawReprMixin):
         except KeyError:
             self.guild_id = None
 
+
 class RawBulkMessageDeleteEvent(_RawReprMixin):
-    """Represents the event payload for a :func:`on_raw_bulk_message_delete` event.
+    """
+    Represents the event payload for a :func:`on_raw_bulk_message_delete` event.
 
     Attributes
     -----------
@@ -82,8 +88,10 @@ class RawBulkMessageDeleteEvent(_RawReprMixin):
         except KeyError:
             self.guild_id = None
 
+
 class RawMessageUpdateEvent(_RawReprMixin):
-    """Represents the payload for a :func:`on_raw_message_edit` event.
+    """
+    Represents the payload for a :func:`on_raw_message_edit` event.
 
     Attributes
     -----------
@@ -108,8 +116,10 @@ class RawMessageUpdateEvent(_RawReprMixin):
         self.data = data
         self.cached_message = None
 
+
 class RawReactionActionEvent(_RawReprMixin):
-    """Represents the payload for a :func:`on_raw_reaction_add` or
+    """
+    Represents the payload for a :func:`on_raw_reaction_add` or
     :func:`on_raw_reaction_remove` event.
 
     Attributes
@@ -153,8 +163,10 @@ class RawReactionActionEvent(_RawReprMixin):
         except KeyError:
             self.guild_id = None
 
+
 class RawReactionClearEvent(_RawReprMixin):
-    """Represents the payload for a :func:`on_raw_reaction_clear` event.
+    """
+    Represents the payload for a :func:`on_raw_reaction_clear` event.
 
     Attributes
     -----------
@@ -177,8 +189,10 @@ class RawReactionClearEvent(_RawReprMixin):
         except KeyError:
             self.guild_id = None
 
+
 class RawReactionClearEmojiEvent(_RawReprMixin):
-    """Represents the payload for a :func:`on_raw_reaction_clear_emoji` event.
+    """
+    Represents the payload for a :func:`on_raw_reaction_clear_emoji` event.
 
     .. versionadded:: 1.3
 
