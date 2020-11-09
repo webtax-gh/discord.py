@@ -40,8 +40,7 @@ default = _FakeBool()
 
 
 class AllowedMentions:
-    """
-    A class that represents what mentions are allowed in a message.
+    """A class that represents what mentions are allowed in a message.
 
     This class can be set during :class:`Client` initialisation to apply
     to every message sent. It can also be applied on a per message basis
@@ -99,14 +98,15 @@ class AllowedMentions:
         if self.everyone:
             parse.append('everyone')
 
-        if self.users is True:
+        # Compareing with `==` here because _FakeBool doens't want to identity compare
+        if self.users == True:
             parse.append('users')
-        elif self.users is not False:
+        elif self.users != False:
             data['users'] = [x.id for x in self.users]
 
-        if self.roles is True:
+        if self.roles == True:
             parse.append('roles')
-        elif self.roles is not False:
+        elif self.roles != False:
             data['roles'] = [x.id for x in self.roles]
 
         data['parse'] = parse
@@ -123,6 +123,3 @@ class AllowedMentions:
 
     def __repr__(self):
         return '{0.__class__.__qualname__}(everyone={0.everyone}, users={0.users}, roles={0.roles})'.format(self)
-
-
-AllowedMentions.NONE = AllowedMentions(everyone=False, roles=False, users=False)
