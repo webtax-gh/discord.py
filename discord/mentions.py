@@ -123,3 +123,6 @@ class AllowedMentions:
 
     def __repr__(self):
         return '{0.__class__.__qualname__}(everyone={0.everyone}, users={0.users}, roles={0.roles})'.format(self)
+
+
+AllowedMentions.NONE = AllowedMentions(everyone=False, roles=False, users=False)
