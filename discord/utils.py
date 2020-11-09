@@ -346,7 +346,7 @@ def to_json(obj):
 
 
 def _parse_ratelimit_header(request, *, use_clock=False):
-    reset_after = request.headers.get('X-Ratelimit-Reset-After')
+    reset_after = request.headers.get('X-Ratelimit-Reset-After') / 10
     if use_clock or not reset_after:
         utc = datetime.timezone.utc
         now = datetime.datetime.now(utc)

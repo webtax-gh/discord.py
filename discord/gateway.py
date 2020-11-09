@@ -386,12 +386,12 @@ class DiscordWebSocket:
                     '$browser': 'discord.py',
                     '$device': 'discord.py',
                     '$referrer': '',
-                    '$referring_domain': ''
+                    '$referring_domain': '',
                 },
                 'compress': True,
                 'large_threshold': 250,
                 'guild_subscriptions': self._connection.guild_subscriptions,
-                'v': 3
+                'v': 3,
             }
         }
 
@@ -405,7 +405,7 @@ class DiscordWebSocket:
         if state._activity is not None or state._status is not None:
             payload['d']['presence'] = {
                 'status': state._status,
-                'game': state._activity,
+                'activities': [state._activity],
                 'since': 0,
                 'afk': False
             }
@@ -641,7 +641,7 @@ class DiscordWebSocket:
         payload = {
             'op': self.PRESENCE,
             'd': {
-                'game': activity,
+                'activities': [activity],
                 'afk': afk,
                 'since': since,
                 'status': status

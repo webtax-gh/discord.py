@@ -154,6 +154,8 @@ class AuditLogChanges:
 
             try:
                 before = elem['old_value']
+                if key in ['allow', 'deny', 'permissions']:
+                    before = int(before)
             except KeyError:
                 before = None
             else:
@@ -164,6 +166,8 @@ class AuditLogChanges:
 
             try:
                 after = elem['new_value']
+                if key in ['allow', 'deny', 'permissions']:
+                    after = int(after)
             except KeyError:
                 after = None
             else:
@@ -271,7 +275,7 @@ class AuditLogEntry:
                 # the overwrite_ actions have a dict with some information
                 instance_id = int(self.extra['id'])
                 the_type = self.extra.get('type')
-                if the_type == 'member':
+                if the_type == '1':
                     self.extra = self._get_member(instance_id)
                 else:
                     role = self.guild.get_role(instance_id)

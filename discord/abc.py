@@ -186,16 +186,16 @@ class _Overwrites:
 
     def __init__(self, **kwargs):
         self.id = kwargs.pop('id')
-        self.allow = kwargs.pop('allow', 0)
-        self.deny = kwargs.pop('deny', 0)
-        self.type = sys.intern(kwargs.pop('type'))
+        self.allow = int(kwargs.pop('allow', 0))
+        self.deny = int(kwargs.pop('deny', 0))
+        self.type = sys.intern({0: 'role', 1: 'member'}[kwargs.pop('type')])
 
     def _asdict(self):
         return {
             'id': self.id,
-            'allow': self.allow,
-            'deny': self.deny,
-            'type': self.type,
+            'allow': str(self.allow),
+            'deny': str(self.deny),
+            'type': {'role': 0, 'member': 1}[self.type],
         }
 
 

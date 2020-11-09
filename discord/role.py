@@ -144,7 +144,7 @@ class Role(Hashable):
 
     def _update(self, data):
         self.name = data['name']
-        self._permissions = data.get('permissions', 0)
+        self._permissions = int(data.get('permissions', 0))
         self.position = data.get('position', 0)
         self._colour = data.get('color', 0)
         self.hoist = data.get('hoist', False)
@@ -292,7 +292,7 @@ class Role(Hashable):
 
         payload = {
             'name': fields.get('name', self.name),
-            'permissions': fields.get('permissions', self.permissions).value,
+            'permissions': str(fields.get('permissions', self.permissions).value),
             'color': colour.value,
             'hoist': fields.get('hoist', self.hoist),
             'mentionable': fields.get('mentionable', self.mentionable)
